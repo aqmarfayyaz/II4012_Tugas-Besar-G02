@@ -1,0 +1,9 @@
+{
+  "kimi@gmail.com": {
+    "password": "pbkdf2:sha256:600000$LYShOgNomuplz4JN$13fc80b84d238189119c07fd4b1830571148e4c4703db824f4df0ace8bd1e6da",
+    "token": "27b1fa8f-171b-4388-80a0-2ac44cfff2cc",
+    "profile": {
+      "username": "kimi@gmail.com"
+    }
+  }
+}
