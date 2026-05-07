@@ -111,12 +111,10 @@ const Candidates = () => {
     <Layout title="Candidates">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
         {/* Header Section */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Candidate Pool</h1>
-            <p className="text-body-md text-secondary mt-1">
-              Manage and evaluate all candidates across your recruitment pipeline ({filteredCandidates.length} results)
-            </p>
+            <p className="text-body-md text-secondary mt-1">Manage and evaluate all candidates across your recruitment pipeline</p>
           </div>
           <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all flex items-center gap-2">
             <span className="material-symbols-outlined text-sm">add</span>

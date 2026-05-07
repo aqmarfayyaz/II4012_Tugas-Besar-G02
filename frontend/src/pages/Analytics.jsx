@@ -44,10 +44,10 @@ const Analytics = () => {
     <Layout title="Analytics">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
         {/* Header Section */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Recruitment Intelligence</h1>
-            <p className="text-body-md text-secondary mt-1">Real-time performance metrics and AI-driven efficiency modeling.</p>
+            <p className="text-body-md text-secondary mt-1">Real-time performance metrics and AI-driven efficiency modeling</p>
           </div>
           <div className="flex items-center gap-3">
             <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">

@@ -49,7 +49,7 @@ const Dashboard = () => {
     <Layout title="Dashboard">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
         {/* Header Section */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Dashboard Overview</h1>
             <p className="text-body-md text-secondary mt-1">Real-time recruitment performance metrics</p>
