@@ -1,0 +1,9 @@
+/* Basic app styles. Tailwind handles the main design system. */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #fbf8fa;
+}
