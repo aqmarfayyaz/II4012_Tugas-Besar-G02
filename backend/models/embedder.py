@@ -1,95 +1,173 @@
 """
 Embedder Service
-Generates embeddings for CV and JD texts
+Generates embeddings for CV and JD texts using OpenAI
 """
 
 import logging
 import numpy as np
-from typing import List, Union
+from typing import List
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+client = OpenAI()
+
+
 class TextEmbedder:
-    def __init__(self, model_name: str = 'sentence-transformers/all-MiniLM-L6-v2'):
+
+    def __init__(
+        self,
+        model_name: str = "text-embedding-3-small"
+    ):
         """
-        Initialize embedder with sentence transformer
-        
+        Initialize OpenAI embedding model
+
         Args:
-            model_name: HuggingFace model identifier
+            model_name: OpenAI embedding model
         """
+
         self.model_name = model_name
-        self.model = None
-        self._load_model()
-    
-    def _load_model(self):
-        """Load sentence transformer model"""
-        try:
-            # TODO: Load sentence transformer model
-            # from sentence_transformers import SentenceTransformer
-            # self.model = SentenceTransformer(self.model_name)
-            logger.info(f"Embedder model loaded: {self.model_name}")
-        except Exception as e:
-            logger.error(f"Error loading embedder model: {str(e)}")
-    
-    def embed_text(self, text: str) -> np.ndarray:
+
+        logger.info(
+            f"Embedding model initialized: {model_name}"
+        )
+
+    def embed_text(
+        self,
+        text: str
+    ) -> np.ndarray:
         """
-        Embed single text
-        
+        Embed single text using OpenAI
+
         Args:
             text: Text to embed
-            
+
         Returns:
             Embedding vector
         """
-        if not self.model:
-            # Return dummy embedding for now
-            return np.zeros(384)
-        
+
         try:
-            embedding = self.model.encode(text, convert_to_numpy=True)
-            return embedding
+
+            response = client.embeddings.create(
+                model=self.model_name,
+                input=text
+            )
+
+            embedding = (
+                response
+                .data[0]
+                .embedding
+            )
+
+            return np.array(embedding)
+
         except Exception as e:
-            logger.error(f"Error embedding text: {str(e)}")
-            return np.zeros(384)
-    
-    def embed_texts(self, texts: List[str]) -> np.ndarray:
+
+            logger.error(
+                f"Error embedding text: {str(e)}"
+            )
+
+            return np.zeros(1536)
+
+    def embed_texts(
+        self,
+        texts: List[str]
+    ) -> np.ndarray:
         """
         Embed multiple texts
-        
+
         Args:
-            texts: List of texts to embed
-            
+            texts: List of texts
+
         Returns:
-            2D numpy array of embeddings
+            2D embedding array
         """
-        if not self.model:
-            return np.zeros((len(texts), 384))
-        
+
         try:
-            embeddings = self.model.encode(texts, convert_to_numpy=True)
-            return embeddings
+
+            response = client.embeddings.create(
+                model=self.model_name,
+                input=texts
+            )
+
+            embeddings = [
+                item.embedding
+                for item in response.data
+            ]
+
+            return np.array(embeddings)
+
         except Exception as e:
-            logger.error(f"Error embedding texts: {str(e)}")
-            return np.zeros((len(texts), 384))
-    
-    def embed_cv(self, cv_data: dict) -> np.ndarray:
-        """Embed CV data"""
-        # Combine key sections
-        combined_text = f"""
-        {cv_data.get('summary', '')}
-        {cv_data.get('experience_text', '')}
-        {cv_data.get('education_text', '')}
-        {' '.join(cv_data.get('skills', []))}
+
+            logger.error(
+                f"Error embedding texts: {str(e)}"
+            )
+
+            return np.zeros(
+                (len(texts), 1536)
+            )
+
+    def embed_cv(
+        self,
+        cv_data: dict
+    ) -> np.ndarray:
         """
-        return self.embed_text(combined_text)
-    
-    def embed_jd(self, jd_data: dict) -> np.ndarray:
-        """Embed Job Description data"""
+        Embed CV data
+        """
+
         combined_text = f"""
+        Summary:
+        {cv_data.get('summary', '')}
+
+        Skills:
+        {' '.join(cv_data.get('skills', []))}
+
+        Experience:
+        {' '.join(cv_data.get('experience', []))}
+
+        Education:
+        {' '.join(cv_data.get('education', []))}
+
+        Certifications:
+        {' '.join(cv_data.get('certifications', []))}
+
+        Projects:
+        {' '.join(cv_data.get('projects', []))}
+        """
+
+        return self.embed_text(
+            combined_text
+        )
+
+    def embed_jd(
+        self,
+        jd_data: dict
+    ) -> np.ndarray:
+        """
+        Embed Job Description data
+        """
+
+        combined_text = f"""
+        Job Title:
         {jd_data.get('job_title', '')}
+
+        Description:
         {jd_data.get('description', '')}
+
+        Requirements:
         {jd_data.get('requirements', '')}
+
+        Required Skills:
         {' '.join(jd_data.get('required_skills', []))}
+
+        Preferred Skills:
         {' '.join(jd_data.get('preferred_skills', []))}
         """
-        return self.embed_text(combined_text)
+
+        return self.embed_text(
+            combined_text
+        )
