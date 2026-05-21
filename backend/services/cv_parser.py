@@ -1,14 +1,17 @@
 """
-CV Parser using LlamaParse + OpenAI
-Extracts structured data from CV PDF/DOCX
+CV Parser using pdfplumber/python-docx + OpenAI
+Extracts structured data from CV PDF/DOCX without external parsing APIs
 """
 
 import json
 import logging
+import os
+import re
 from typing import Dict, Any
 
+import pdfplumber
+from docx import Document
 from dotenv import load_dotenv
-from llama_parse import LlamaParse
 from openai import OpenAI
 
 load_dotenv()
@@ -20,95 +23,68 @@ openai_client = OpenAI()
 
 class CVParser:
 
-    def __init__(
-        self,
-        api_key: str = None
-    ):
-        """
-        Initialize CV Parser
-        """
-
+    def __init__(self, api_key: str = None):
         self.api_key = api_key
-
-        self.parser = LlamaParse(
-            api_key=api_key,
-            result_type="markdown",
-            parsing_instruction="""
-            Extract CV content accurately.
-            Preserve:
-            - education
-            - experience
-            - skills
-            - certifications
-            - projects
-            - achievements
-            """
-        )
 
     def parse_cv(
         self,
         file_path: str
     ) -> Dict[str, Any]:
-        """
-        Parse CV file and extract structured data
-
-        Args:
-            file_path: Path to CV PDF/DOCX
-
-        Returns:
-            Structured CV JSON
-        """
 
         try:
+            logger.info(f"Parsing CV: {file_path}")
 
-            logger.info(
-                f"Parsing CV: {file_path}"
-            )
+            raw_text = self._extract_text(file_path)
 
-            documents = (
-                self.parser.load_data(
-                    file_path
+            if not raw_text.strip():
+                raise ValueError(
+                    "Could not extract text from CV file. "
+                    "Ensure the file is a readable PDF or DOCX."
                 )
-            )
 
-            raw_text = "\n".join([
-                doc.text
-                for doc in documents
-            ])
-
-            structured_data = (
-                self.structure_with_openai(
-                    raw_text
-                )
-            )
-
-            structured_data[
-                "raw_text"
-            ] = raw_text
+            structured_data = self.structure_with_openai(raw_text)
+            structured_data["raw_text"] = raw_text
 
             return structured_data
 
         except Exception as e:
-
-            logger.error(
-                f"Error parsing CV: {str(e)}"
-            )
-
+            logger.error(f"Error parsing CV: {str(e)}")
             raise
+
+    def _extract_text(self, file_path: str) -> str:
+        ext = os.path.splitext(file_path)[1].lower()
+
+        if ext == ".pdf":
+            return self._extract_pdf(file_path)
+        elif ext in (".docx", ".doc"):
+            return self._extract_docx(file_path)
+        else:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                return f.read()
+
+    def _extract_pdf(self, file_path: str) -> str:
+        text_parts = []
+        with pdfplumber.open(file_path) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text()
+                if text:
+                    text_parts.append(text)
+        return "\n".join(text_parts)
+
+    def _extract_docx(self, file_path: str) -> str:
+        doc = Document(file_path)
+        paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+        return "\n".join(paragraphs)
 
     def structure_with_openai(
         self,
         raw_text: str
     ) -> Dict[str, Any]:
-        """
-        Convert raw CV text into structured JSON
-        using OpenAI
-        """
 
         prompt = f"""
         Extract this CV into structured JSON.
 
-        Return ONLY valid JSON.
+        Return ONLY valid JSON with no markdown, no code blocks.
 
         Required JSON schema:
 
@@ -137,12 +113,11 @@ class CVParser:
                 messages=[
                     {
                         "role": "system",
-                        "content":
-                        """
-                        You are an expert HR CV parser.
-                        Extract structured candidate information accurately.
-                        Return ONLY valid JSON.
-                        """
+                        "content": (
+                            "You are an expert HR CV parser. "
+                            "Extract structured candidate information accurately. "
+                            "Return ONLY valid JSON with no markdown or code blocks."
+                        )
                     },
                     {
                         "role": "user",
@@ -153,27 +128,17 @@ class CVParser:
             )
         )
 
-        content = (
-            response
-            .choices[0]
-            .message
-            .content
-        )
+        content = response.choices[0].message.content.strip()
+
+        # Strip markdown code fences if GPT wraps the JSON
+        content = re.sub(r"^```(?:json)?\s*", "", content)
+        content = re.sub(r"\s*```$", "", content)
 
         try:
-
-            parsed_json = json.loads(
-                content
-            )
-
-            return parsed_json
+            return json.loads(content)
 
         except Exception:
-
-            logger.error(
-                "Failed to parse OpenAI JSON response"
-            )
-
+            logger.error("Failed to parse OpenAI JSON response")
             return {
                 "name": "",
                 "email": "",
@@ -186,34 +151,3 @@ class CVParser:
                 "summary": "",
                 "raw_text": raw_text
             }
-
-    def extract_sections(
-        self,
-        text: str
-    ) -> Dict[str, str]:
-        """
-        Extract basic CV sections
-        """
-
-        sections = {
-            "summary": "",
-            "experience": "",
-            "education": "",
-            "skills": ""
-        }
-
-        text_lower = text.lower()
-
-        if "summary" in text_lower:
-            sections["summary"] = text
-
-        if "experience" in text_lower:
-            sections["experience"] = text
-
-        if "education" in text_lower:
-            sections["education"] = text
-
-        if "skills" in text_lower:
-            sections["skills"] = text
-
-        return sections

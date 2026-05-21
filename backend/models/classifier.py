@@ -1,82 +1,109 @@
 """
-Logistic Regression Classifier
-For job category classification
+Logistic Regression Classifier for job family classification.
+Loads lr_classifier_family.pkl, tfidf_word.pkl, tfidf_char.pkl
+produced by II4012_M01_G02_Modelling_LogReg.ipynb.
 """
 
 import logging
-import pickle
-import numpy as np
+import re
+from pathlib import Path
 from typing import Dict, Tuple
+
+import joblib
+from scipy.sparse import hstack
 
 logger = logging.getLogger(__name__)
 
+# pkl files are saved to project root by the notebook (Path("."))
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+CONFIDENCE_THRESHOLD = 0.75
+
+_DATE_RE = re.compile(
+    r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)"
+    r"(uary|ruary|ch|il|e|y|ust|tember|ober|ember)?\b"
+)
+
+
+def _clean_text(text: str) -> str:
+    s = text.lower()
+    s = re.sub(r"<[^>]+>",          " ", s)
+    s = re.sub(r"\S+@\S+",          " ", s)
+    s = re.sub(r"http\S+|www\.\S+", " ", s)
+    s = re.sub(r"\b\d{7,}\b",       " ", s)
+    s = _DATE_RE.sub(               " ", s)
+    s = re.sub(r"\d+",              " ", s)
+    s = re.sub(r"[^\w\s+#\.]",      " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
 class JobCategoryClassifier:
-    def __init__(self, model_path: str = None):
-        """
-        Initialize classifier
-        
-        Args:
-            model_path: Path to saved model file
-        """
+
+    def __init__(self, model_dir: str = None):
         self.model = None
-        self.vectorizer = None
+        self.word_vec = None
+        self.char_vec = None
         self.classes = None
-        
-        if model_path:
-            self.load_model(model_path)
-    
-    def load_model(self, model_path: str):
-        """Load pre-trained model"""
+
+        dir_path = Path(model_dir) if model_dir else _PROJECT_ROOT
+        self._load(dir_path)
+
+    def _load(self, model_dir: Path):
         try:
-            with open(model_path, 'rb') as f:
-                model_data = pickle.load(f)
-                self.model = model_data.get('model')
-                self.vectorizer = model_data.get('vectorizer')
-                self.classes = model_data.get('classes')
-            logger.info(f"Model loaded from {model_path}")
+            self.model    = joblib.load(model_dir / "lr_classifier_family.pkl")
+            self.word_vec = joblib.load(model_dir / "tfidf_word.pkl")
+            self.char_vec = joblib.load(model_dir / "tfidf_char.pkl")
+            self.classes  = list(self.model.classes_)
+            logger.info(f"Classifier loaded from {model_dir}")
+        except FileNotFoundError:
+            logger.warning(
+                "Classifier pkl files not found in %s. "
+                "Run II4012_M01_G02_Modelling_LogReg.ipynb to generate them.",
+                model_dir,
+            )
         except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-    
+            logger.error("Error loading classifier: %s", e)
+
+    @property
+    def is_loaded(self) -> bool:
+        return (
+            self.model is not None
+            and self.word_vec is not None
+            and self.char_vec is not None
+        )
+
+    def _features(self, text: str):
+        cleaned = _clean_text(text)
+        xw = self.word_vec.transform([cleaned])
+        xc = self.char_vec.transform([cleaned])
+        return hstack([xw, xc]).tocsr()
+
     def predict(self, text: str) -> Tuple[str, float]:
-        """
-        Predict job category
-        
-        Args:
-            text: Job description text
-            
-        Returns:
-            (predicted_category, confidence_score)
-        """
-        if not self.model or not self.vectorizer:
-            logger.warning("Model not loaded")
+        if not self.is_loaded:
+            logger.warning("Classifier not loaded; skipping prediction")
             return "Unknown", 0.0
-        
         try:
-            # TODO: Vectorize text and predict
-            X = self.vectorizer.transform([text])
-            prediction = self.model.predict(X)[0]
-            probabilities = self.model.predict_proba(X)[0]
-            confidence = max(probabilities)
-            
+            feat = self._features(text)
+            prediction   = self.model.predict(feat)[0]
+            probabilities = self.model.predict_proba(feat)[0]
+            confidence   = float(max(probabilities))
             return prediction, confidence
         except Exception as e:
-            logger.error(f"Error predicting: {str(e)}")
+            logger.error("Error predicting: %s", e)
             return "Unknown", 0.0
-    
+
     def predict_proba(self, text: str) -> Dict[str, float]:
-        """Get probability for each class"""
-        if not self.model or not self.vectorizer:
+        if not self.is_loaded:
             return {}
-        
         try:
-            X = self.vectorizer.transform([text])
-            probabilities = self.model.predict_proba(X)[0]
-            
-            result = {}
-            for class_label, prob in zip(self.classes, probabilities):
-                result[class_label] = float(prob)
-            
-            return result
+            feat = self._features(text)
+            probabilities = self.model.predict_proba(feat)[0]
+            return dict(
+                sorted(
+                    zip(self.classes, probabilities.round(4).tolist()),
+                    key=lambda x: -x[1],
+                )
+            )
         except Exception as e:
-            logger.error(f"Error computing probabilities: {str(e)}")
+            logger.error("Error computing probabilities: %s", e)
             return {}

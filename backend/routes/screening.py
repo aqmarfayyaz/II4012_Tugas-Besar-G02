@@ -6,11 +6,14 @@ CV Parsing + Embedding + Semantic Matching
 from flask import Blueprint, request, jsonify
 import logging
 
+import os
+
 from services.cv_parser import CVParser
 from services.embedder import TextEmbedder
 from services.similarity_scorer import SimilarityScorer
 from services.job_matcher import JobMatcher
 from services.data_cleaner import DataCleaner
+from models.classifier import JobCategoryClassifier, CONFIDENCE_THRESHOLD
 
 from utils.helpers import format_response
 
@@ -37,6 +40,8 @@ job_matcher = JobMatcher(
 )
 
 cv_parser = CVParser()
+
+classifier = JobCategoryClassifier()
 
 
 # ==========================================
@@ -77,11 +82,23 @@ def parse_cv():
 
         file.save(temp_path)
 
-        parsed_data = (
-            cv_parser.parse_cv(
-                temp_path
-            )
-        )
+        try:
+            parsed_data = cv_parser.parse_cv(temp_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+        # Run job-family classification using pkl model when available
+        if classifier.is_loaded:
+            text_for_clf = parsed_data.get("raw_text", "")
+            if text_for_clf:
+                pred, conf = classifier.predict(text_for_clf)
+                parsed_data["predicted_family"] = pred
+                parsed_data["confidence"] = round(conf, 4)
+                parsed_data["probabilities"] = classifier.predict_proba(
+                    text_for_clf
+                )
+                parsed_data["needs_human_review"] = conf < CONFIDENCE_THRESHOLD
 
         return jsonify(
             format_response(
