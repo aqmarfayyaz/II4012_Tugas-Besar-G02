@@ -14,7 +14,7 @@ from scipy.sparse import hstack
 
 logger = logging.getLogger(__name__)
 
-# pkl files are saved to project root by the notebook (Path("."))
+# pkl files saved to project root by the notebook (Path("."))
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 CONFIDENCE_THRESHOLD = 0.75
@@ -80,13 +80,12 @@ class JobCategoryClassifier:
 
     def predict(self, text: str) -> Tuple[str, float]:
         if not self.is_loaded:
-            logger.warning("Classifier not loaded; skipping prediction")
             return "Unknown", 0.0
         try:
             feat = self._features(text)
-            prediction   = self.model.predict(feat)[0]
+            prediction    = self.model.predict(feat)[0]
             probabilities = self.model.predict_proba(feat)[0]
-            confidence   = float(max(probabilities))
+            confidence    = float(max(probabilities))
             return prediction, confidence
         except Exception as e:
             logger.error("Error predicting: %s", e)

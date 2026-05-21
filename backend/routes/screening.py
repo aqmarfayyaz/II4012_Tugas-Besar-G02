@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+﻿from flask import Blueprint, request, jsonify
 import logging
 
 import os
@@ -73,7 +73,19 @@ def parse_cv():
         temp_path = f"temp_{file.filename}"
         file.save(temp_path)
 
-        parsed_data = cv_parser.parse_cv(temp_path)
+        try:
+            parsed_data = cv_parser.parse_cv(temp_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+        raw_text = parsed_data.get("raw_text", "")
+        if raw_text:
+            clf_result = job_family_classifier.predict(raw_text)
+            parsed_data["predicted_family"] = clf_result.get("label")
+            parsed_data["confidence"] = clf_result.get("confidence")
+            parsed_data["probabilities"] = clf_result.get("probabilities", {})
+            parsed_data["needs_human_review"] = clf_result.get("confidence", 0) < 0.75
 
         return jsonify(
             format_response(

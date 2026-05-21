@@ -25,5 +25,25 @@
       "name": "inggried",
       "provider": "password"
     }
+  },
+  "alex@company.com": {
+    "password": "pbkdf2:sha256:600000$qdHksL0HjAMyYEFD$f8cbe5929b1f8e64f80d6052f7463819d4c579ed19f8a42ab7ee9dda1db681c1",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGV4QGNvbXBhbnkuY29tIiwiaWF0IjoxNzc5MzU2ODMwLCJleHAiOjE3NzkzNjQwMzB9.NHW8vouvMzrMAt8HeeCG-10T846ubTJ-z8O2D47woFI",
+    "profile": {
+      "username": "alex@company.com",
+      "email": "alex@company.com",
+      "name": "Alex Recruiter",
+      "provider": "password"
+    }
+  },
+  "veli@gmail.com": {
+    "password": "pbkdf2:sha256:600000$sAitNk8I4BkIDEtZ$c2110401a8ca0e627363cb66d7e88bcff5501af816c733c9ce98a23e9eaf68b4",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ2ZWxpQGdtYWlsLmNvbSIsImlhdCI6MTc3OTM1NjkyMSwiZXhwIjoxNzc5MzY0MTIxfQ.qZkjQvIWGdQo34Kgex-RXg3ET6asWcWeHyOG5u8Vljw",
+    "profile": {
+      "username": "veli@gmail.com",
+      "email": "veli@gmail.com",
+      "name": "veli",
+      "provider": "password"
+    }
   }
 }
