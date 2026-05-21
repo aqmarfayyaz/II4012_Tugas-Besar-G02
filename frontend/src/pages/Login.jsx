@@ -1,22 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, startGoogleAuth, user, authLoading } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.email && formData.password) {
-      login(formData.email, formData.password);
+  const getErrorMessage = (err) => (
+    err?.response?.data?.message ||
+    err?.response?.data?.error ||
+    err?.message ||
+    'Login failed'
+  );
+
+  useEffect(() => {
+    if (!authLoading && user) {
       navigate('/projects');
-    } else {
-      setError('Please fill in all fields');
     }
+  }, [authLoading, user, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await login(formData.email, formData.password);
+      navigate('/projects');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleAuth = () => {
+    setOauthLoading(true);
+    startGoogleAuth();
   };
 
   return (
@@ -143,9 +171,10 @@ const Login = () => {
               <div className="space-y-4 pt-4">
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white text-sm font-semibold py-3 rounded-lg hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full bg-primary text-white text-sm font-semibold py-3 rounded-lg hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Access Dashboard
+                  {isSubmitting ? 'Signing in...' : 'Access Dashboard'}
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </button>
 
@@ -159,23 +188,20 @@ const Login = () => {
                   </div>
                 </div>
 
-                {/* SSO Options */}
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    className="flex items-center justify-center gap-2 py-3 border border-outline-variant rounded-lg text-sm font-semibold text-primary hover:bg-surface-container-low transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-base">key</span>
-                    SSO
-                  </button>
-                  <button
-                    type="button"
-                    className="flex items-center justify-center gap-2 py-3 border border-outline-variant rounded-lg text-sm font-semibold text-primary hover:bg-surface-container-low transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-base">cloud_done</span>
-                    Azure AD
-                  </button>
-                </div>
+                {/* Google Auth */}
+                <button
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  disabled={oauthLoading}
+                  className="flex items-center justify-center gap-3 py-3 px-4 border border-outline-variant rounded-lg text-sm font-semibold text-primary hover:bg-surface-container-low transition-colors disabled:opacity-60 disabled:cursor-not-allowed w-full max-w-xs mx-auto"
+                >
+                  <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    className="w-5 h-5"
+                  />
+                  {oauthLoading ? 'Redirecting...' : 'Continue with Google'}
+                </button>
               </div>
             </form>
 

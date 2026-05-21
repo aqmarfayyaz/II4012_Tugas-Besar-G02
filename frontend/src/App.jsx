@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
 import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
 import CandidateDetail from './pages/CandidateDetail';
 import Candidates from './pages/Candidates';
 import Ranking from './pages/Ranking';
@@ -19,7 +20,14 @@ import './App.css';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-on-surface-variant">
+        Checking session...
+      </div>
+    );
+  }
   return user ? children : <Navigate to="/landing" replace />;
 };
 
@@ -47,6 +55,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Projects />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute>
+            <ProjectDetail />
           </ProtectedRoute>
         }
       />
