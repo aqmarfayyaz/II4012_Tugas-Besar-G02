@@ -1,93 +1,224 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, startGoogleAuth, user, authLoading } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.name && formData.email && formData.password) {
-      register(formData.email, formData.password, formData.name);
+  const getErrorMessage = (err) => (
+    err?.response?.data?.message ||
+    err?.response?.data?.error ||
+    err?.message ||
+    'Register failed'
+  );
+
+  useEffect(() => {
+    if (!authLoading && user) {
       navigate('/projects');
-    } else {
+    }
+  }, [authLoading, user, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all fields');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await register(formData.email, formData.password, formData.name);
+      navigate('/projects');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleGoogleAuth = () => {
+    setOauthLoading(true);
+    startGoogleAuth();
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary/95 to-primary/90 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-white/70">Join TalentPulse and start recruiting</p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-label-sm font-semibold text-slate-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="Your full name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-label-sm font-semibold text-slate-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="your@email.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-label-sm font-semibold text-slate-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="••••••••"
-              />
-            </div>
-
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm">{error}</div>}
-
-            <button
-              type="submit"
-              className="w-full px-6 py-2 bg-primary text-white rounded-lg font-semibold text-base hover:opacity-90 transition-all"
-            >
-              Create Account
-            </button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-            <p className="text-slate-600 text-sm">
-              Already have an account?{' '}
-              <Link to="/login" className="text-primary font-semibold hover:underline">
-                Sign in
-              </Link>
-            </p>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-surface-container-low">
+      <div className="w-full max-w-6xl flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[600px]">
+        {/* Left Side: Brand Section */}
+        <section className="hidden md:flex flex-1 relative bg-primary items-center justify-center p-8 overflow-hidden">
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-slate-900 to-transparent"></div>
           </div>
-        </div>
+          <div className="relative z-10 text-center max-w-md">
+            <div className="mb-6 inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-xl backdrop-blur-sm">
+              <span className="material-symbols-outlined text-white text-4xl">hub</span>
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-4">TalentPulse AI</h1>
+            <p className="text-base text-primary-fixed-dim mb-8">
+              Empowering global enterprises with intelligent recruitment orchestration and predictive workforce analytics.
+            </p>
+            <div className="grid grid-cols-2 gap-4 text-left">
+              <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+                <span className="material-symbols-outlined text-primary-fixed-dim block mb-2">verified_user</span>
+                <p className="text-xs font-semibold text-white">Institutional Trust</p>
+              </div>
+              <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+                <span className="material-symbols-outlined text-primary-fixed-dim block mb-2">bolt</span>
+                <p className="text-xs font-semibold text-white">Operational Efficiency</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <div className="mt-6 text-center">
-          <Link to="/landing" className="text-white/70 hover:text-white transition-colors flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Back to Home
-          </Link>
-        </div>
+        {/* Right Side: Register Form */}
+        <section className="flex-1 flex flex-col justify-center px-8 py-12 md:px-16">
+          <div className="w-full max-w-sm mx-auto">
+            {/* Mobile Logo */}
+            <div className="md:hidden flex justify-center mb-8">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-3xl">hub</span>
+                <span className="text-2xl font-bold text-primary">TalentPulse</span>
+              </div>
+            </div>
+
+            {/* Header */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-primary mb-2">Create Account</h2>
+              <p className="text-sm text-on-surface-variant">Join TalentPulse and start recruiting with confidence.</p>
+            </div>
+
+            {/* Tabs */}
+            <nav className="flex border-b border-outline-variant mb-8">
+              <Link to="/login" className="px-6 py-3 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">
+                Login
+              </Link>
+              <button className="px-6 py-3 text-sm font-semibold border-b-2 border-primary text-primary transition-colors">
+                Register
+              </button>
+            </nav>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Full Name</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">badge</span>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary-container focus:border-primary-container outline-none transition-all"
+                    placeholder="Your full name"
+                  />
+                </div>
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Corporate Email</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary-container focus:border-primary-container outline-none transition-all"
+                    placeholder="name@company.com"
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Password</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full pl-12 pr-12 py-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary-container focus:border-primary-container outline-none transition-all"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="p-3 bg-error-container text-on-error-container text-xs rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="space-y-4 pt-4">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-primary text-white text-sm font-semibold py-3 rounded-lg hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Creating account...' : 'Create Account'}
+                  <span className="material-symbols-outlined text-base">arrow_forward</span>
+                </button>
+
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-outline-variant"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-4 text-xs text-outline">or continue with</span>
+                  </div>
+                </div>
+
+                {/* Google Auth */}
+                <button
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  disabled={oauthLoading}
+                  className="flex items-center justify-center gap-3 py-3 px-4 border border-outline-variant rounded-lg text-sm font-semibold text-primary hover:bg-surface-container-low transition-colors disabled:opacity-60 disabled:cursor-not-allowed w-full max-w-xs mx-auto"
+                >
+                  <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    className="w-5 h-5"
+                  />
+                  {oauthLoading ? 'Redirecting...' : 'Continue with Google'}
+                </button>
+              </div>
+            </form>
+
+            {/* Footer */}
+            <footer className="mt-8 text-center">
+              <p className="text-xs text-on-surface-variant">
+                By creating an account, you agree to our{' '}
+                <a href="#" className="text-primary hover:underline font-semibold">Terms of Service</a> and{' '}
+                <a href="#" className="text-primary hover:underline font-semibold">Privacy Policy</a>.
+              </p>
+            </footer>
+          </div>
+        </section>
       </div>
+
+      {/* Support Button */}
+      <button className="fixed bottom-8 right-8 bg-white border border-outline-variant text-primary p-3 rounded-full shadow-lg hover:bg-surface-container-low transition-all flex items-center gap-2">
+        <span className="material-symbols-outlined">support_agent</span>
+        <span className="text-xs font-semibold hidden sm:inline pr-2">Support</span>
+      </button>
     </div>
   );
 };

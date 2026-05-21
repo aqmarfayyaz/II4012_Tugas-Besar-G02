@@ -9,6 +9,14 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const getHealth = () => api.get('/health');
 
 // Upload endpoints
@@ -56,5 +64,13 @@ export const loginUser = (payload) => api.post('/auth/login', payload);
 export const logoutUser = (token) => api.post('/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } });
 export const getProfile = (token) => api.get('/auth/profile', { headers: { Authorization: `Bearer ${token}` } });
 export const updateProfile = (token, payload) => api.put('/auth/profile', payload, { headers: { Authorization: `Bearer ${token}` } });
+export const getGoogleAuthUrl = () => `${API_URL}/auth/google`;
+
+// Project endpoints
+export const getProjects = () => api.get('/projects');
+export const getProject = (id) => api.get(`/projects/${id}`);
+export const createProject = (payload) => api.post('/projects', payload);
+export const updateProject = (id, payload) => api.put(`/projects/${id}`, payload);
+export const deleteProject = (id) => api.delete(`/projects/${id}`);
 
 export default api;

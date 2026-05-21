@@ -5,15 +5,13 @@ Main Flask Application for AI-based CV Screening System
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flasgger import Swagger
-
 from config import Config
-from routes import upload, screening, candidates, auth
+from routes import upload, screening, candidates, auth, projects
 
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
     # Enable CORS for frontend
     CORS(app)
 
@@ -26,6 +24,15 @@ def create_app(config_class=Config):
         },
         "basePath": "/",
         "schemes": ["http"],
+        "securityDefinitions": {
+            "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "Use: Bearer <token>",
+            }
+        },
+        "security": [{"BearerAuth": []}],
     }
 
     swagger_config = {
@@ -83,7 +90,12 @@ def create_app(config_class=Config):
     app.register_blueprint(screening.bp)
     app.register_blueprint(candidates.bp)
     app.register_blueprint(auth.bp)
+    app.register_blueprint(projects.bp)
 
+    # Initialize OAuth clients
+    auth.init_oauth(app)
+
+    # Health check endpoint
     @app.route("/api/health", methods=["GET"])
     def health():
         """
