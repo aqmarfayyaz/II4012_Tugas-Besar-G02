@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { uploadCV, uploadJD, uploadJDText } from '../services/api';
+import { getHealth, uploadCV, uploadJDText, rankCandidates } from '../services/api';
 
 const Upload = () => {
   const [cvFiles, setCvFiles] = useState([]);
@@ -9,13 +9,30 @@ const Upload = () => {
   const [error, setError] = useState('');
   const [processingStage, setProcessingStage] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadedCandidates, setUploadedCandidates] = useState([]);
+  const [jdData, setJdData] = useState(null);
+  const [backendStatus, setBackendStatus] = useState('Checking backend...');
 
   const processingStages = [
-    { name: 'Upload complete', desc: '12 CVs uploaded successfully' },
+    { name: 'Upload complete', desc: 'CVs uploaded successfully' },
     { name: 'Parsing CV Metadata', desc: 'Currently analyzing structure...' },
     { name: 'Extracting Skill Data', desc: 'Waiting for parser...' },
     { name: 'Generating Ranking', desc: 'Awaiting data extraction' },
   ];
+
+  useEffect(() => {
+    let isMounted = true;
+    getHealth()
+      .then(() => {
+        if (isMounted) setBackendStatus('Backend connected');
+      })
+      .catch(() => {
+        if (isMounted) setBackendStatus('Backend not reachable');
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleCVChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -28,12 +45,15 @@ const Upload = () => {
     setStatus('Uploading CVs...');
     setUploadProgress(45);
     try {
+      const uploaded = [];
       for (let file of cvFiles) {
         const res = await uploadCV(file);
         if (res.data && res.data.data) {
-          localStorage.setItem('last_upload', JSON.stringify(res.data.data));
+          uploaded.push(res.data.data);
         }
       }
+      setUploadedCandidates(uploaded);
+      localStorage.setItem('last_uploaded_candidates', JSON.stringify(uploaded));
       setStatus('CVs uploaded successfully');
       setUploadProgress(100);
       setProcessingStage(1);
@@ -51,18 +71,32 @@ const Upload = () => {
       const res = await uploadJDText({ text: jdText });
       setStatus('Job description processed successfully');
       if (res.data && res.data.data) {
-        localStorage.setItem('last_upload', JSON.stringify(res.data.data));
+        setJdData(res.data.data);
+        localStorage.setItem('last_uploaded_jd', JSON.stringify(res.data.data));
       }
+      setProcessingStage(2);
     } catch (err) {
       setError('JD processing failed');
     }
   };
 
-  const handleRunScreening = () => {
-    setProcessingStage(1);
-    setTimeout(() => setProcessingStage(2), 2000);
-    setTimeout(() => setProcessingStage(3), 4000);
-    setTimeout(() => setProcessingStage(4), 6000);
+  const handleRunScreening = async () => {
+    if (!uploadedCandidates.length) return setError('Please upload CV files first');
+    if (!jdData) return setError('Please submit job description first');
+    setError('');
+    setStatus('Running screening...');
+    setProcessingStage(3);
+    try {
+      const res = await rankCandidates(uploadedCandidates, jdData);
+      if (res.data && res.data.data) {
+        localStorage.setItem('ranked_candidates', JSON.stringify(res.data.data));
+      }
+      setUploadProgress(100);
+      setProcessingStage(4);
+      setStatus('Screening completed');
+    } catch (err) {
+      setError('Screening failed');
+    }
   };
 
   const handleReset = () => {
@@ -72,6 +106,11 @@ const Upload = () => {
     setError('');
     setProcessingStage(0);
     setUploadProgress(0);
+    setUploadedCandidates([]);
+    setJdData(null);
+    localStorage.removeItem('last_uploaded_candidates');
+    localStorage.removeItem('last_uploaded_jd');
+    localStorage.removeItem('ranked_candidates');
   };
 
   return (
@@ -81,6 +120,7 @@ const Upload = () => {
         <div>
           <h1 className="text-h1 font-h1 text-primary">Upload CV & Screening Data</h1>
           <p className="text-body-md text-secondary mt-1">Upload candidate files for automated AI extraction and score mapping</p>
+          <p className="text-label-sm text-slate-500 mt-1">{backendStatus}</p>
         </div>
 
         {/* Main Content Grid */}
@@ -120,6 +160,14 @@ const Upload = () => {
                   ))}
                 </div>
               )}
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={handleUploadCV}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-all"
+                >
+                  Upload CV Files
+                </button>
+              </div>
             </div>
 
             {/* Job Description Card */}
@@ -131,6 +179,14 @@ const Upload = () => {
                 placeholder="Paste job description here..."
                 className="w-full p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none h-32 resize-none text-label-sm"
               />
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={handleUploadJD}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-all"
+                >
+                  Submit Job Description
+                </button>
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -144,7 +200,7 @@ const Upload = () => {
               </button>
               <button
                 onClick={handleRunScreening}
-                disabled={cvFiles.length === 0 || !jdText}
+                disabled={uploadedCandidates.length === 0 || !jdData}
                 className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ml-auto"
               >
                 <span className="material-symbols-outlined text-sm">play_circle</span>

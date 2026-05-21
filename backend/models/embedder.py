@@ -8,13 +8,13 @@ import numpy as np
 from typing import List
 
 from dotenv import load_dotenv
-from openai import OpenAI
+from llama_parse import LlamaParse
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-client = OpenAI()
+client = LlamaParse()
 
 
 class TextEmbedder:

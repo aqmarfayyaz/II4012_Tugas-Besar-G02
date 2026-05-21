@@ -2,7 +2,17 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 
 const Ranking = () => {
-  const [rankedCandidates] = useState([
+  const storedResults = (() => {
+    try {
+      const raw = localStorage.getItem('ranked_candidates');
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed && parsed.ranked_candidates ? parsed.ranked_candidates : null;
+    } catch (err) {
+      return null;
+    }
+  })();
+
+  const fallbackTop = [
     {
       rank: 1,
       name: 'Sarah Jenkins',
@@ -39,12 +49,41 @@ const Ranking = () => {
       badgeBorder: 'border-slate-100',
       strength: 'Highest score in visual aesthetics and brand coherence. Extensive portfolio in luxury retail. Potential gap in high-density enterprise dashboard experience.'
     },
-  ]);
+  ];
 
-  const [remainingCandidates] = useState([
-    { rank: 4, name: 'David Chen', experience: '5 Yrs • Mobile First', score: 88 },
-    { rank: 5, name: 'Sofia Rodriguez', experience: '7 Yrs • SaaS Expert', score: 85 },
-  ]);
+  const scoreBadge = (score) => {
+    if (score >= 85) return { badge: 'HIGHLY RECOMMENDED', badgeBg: 'bg-green-50', badgeText: 'text-green-700', badgeBorder: 'border-green-100' };
+    if (score >= 70) return { badge: 'STRONG MATCH', badgeBg: 'bg-blue-50', badgeText: 'text-blue-700', badgeBorder: 'border-blue-100' };
+    return { badge: 'MODERATE MATCH', badgeBg: 'bg-slate-50', badgeText: 'text-slate-600', badgeBorder: 'border-slate-100' };
+  };
+
+  const rankedCandidates = storedResults
+    ? storedResults.slice(0, 3).map((candidate, index) => {
+      const score = Math.round(candidate.overall_score || 0);
+      const badge = scoreBadge(score);
+      return {
+        rank: candidate.rank || index + 1,
+        name: candidate.name || 'Candidate',
+        title: candidate.predicted_category || 'Candidate',
+        experience: candidate.experience_text ? 'Experience listed' : 'Experience not provided',
+        score,
+        strength: candidate.insight || 'No insight generated yet.',
+        ...badge
+      };
+    })
+    : fallbackTop;
+
+  const remainingCandidates = storedResults
+    ? storedResults.slice(3).map((candidate) => ({
+      rank: candidate.rank,
+      name: candidate.name || 'Candidate',
+      experience: candidate.predicted_category || 'Candidate',
+      score: Math.round(candidate.overall_score || 0)
+    }))
+    : [
+      { rank: 4, name: 'David Chen', experience: '5 Yrs • Mobile First', score: 88 },
+      { rank: 5, name: 'Sofia Rodriguez', experience: '7 Yrs • SaaS Expert', score: 85 },
+    ];
 
   const [shortlist] = useState([
     { name: 'Sarah Jenkins', score: '98%', avatar: '1' },

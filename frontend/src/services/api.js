@@ -9,6 +9,8 @@ const api = axios.create({
   },
 });
 
+export const getHealth = () => api.get('/health');
+
 // Upload endpoints
 export const uploadCV = (file) => {
   const formData = new FormData();
