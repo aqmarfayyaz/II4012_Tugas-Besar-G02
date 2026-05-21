@@ -1,25 +1,20 @@
 """
-CV Parser using pdfplumber/python-docx + OpenAI
-Extracts structured data from CV PDF/DOCX without external parsing APIs
+CV Parser using LlamaParse only
+Extracts raw text from CV PDF/DOCX
 """
 
-import json
 import logging
-import os
 import re
 from typing import Dict, Any
 
 import pdfplumber
 from docx import Document
 from dotenv import load_dotenv
-from openai import OpenAI
+from llama_parse import LlamaParse
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-
-openai_client = OpenAI()
-
 
 class CVParser:
 
@@ -30,6 +25,15 @@ class CVParser:
         self,
         file_path: str
     ) -> Dict[str, Any]:
+        """
+        Parse CV file and extract raw text
+
+        Args:
+            file_path: Path to CV PDF/DOCX
+
+        Returns:
+            Structured CV JSON (basic fields + raw_text)
+        """
 
         try:
             logger.info(f"Parsing CV: {file_path}")
@@ -42,112 +46,34 @@ class CVParser:
                     "Ensure the file is a readable PDF or DOCX."
                 )
 
-            structured_data = self.structure_with_openai(raw_text)
+            structured_data = self.structure_with_heuristics(raw_text)
             structured_data["raw_text"] = raw_text
-
             return structured_data
 
         except Exception as e:
             logger.error(f"Error parsing CV: {str(e)}")
             raise
 
-    def _extract_text(self, file_path: str) -> str:
-        ext = os.path.splitext(file_path)[1].lower()
-
-        if ext == ".pdf":
-            return self._extract_pdf(file_path)
-        elif ext in (".docx", ".doc"):
-            return self._extract_docx(file_path)
-        else:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                return f.read()
-
-    def _extract_pdf(self, file_path: str) -> str:
-        text_parts = []
-        with pdfplumber.open(file_path) as pdf:
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    text_parts.append(text)
-        return "\n".join(text_parts)
-
-    def _extract_docx(self, file_path: str) -> str:
-        doc = Document(file_path)
-        paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-        return "\n".join(paragraphs)
-
-    def structure_with_openai(
+    def structure_with_heuristics(
         self,
         raw_text: str
     ) -> Dict[str, Any]:
-
-        prompt = f"""
-        Extract this CV into structured JSON.
-
-        Return ONLY valid JSON with no markdown, no code blocks.
-
-        Required JSON schema:
-
-        {{
-          "name": "",
-          "email": "",
-          "phone": "",
-          "skills": [],
-          "experience": [],
-          "education": [],
-          "certifications": [],
-          "projects": [],
-          "summary": ""
-        }}
-
-        CV CONTENT:
-        {raw_text}
+        """
+        Convert raw CV text into a minimal structured JSON
+        without external LLMs.
         """
 
-        response = (
-            openai_client
-            .chat
-            .completions
-            .create(
-                model="gpt-4.1-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert HR CV parser. "
-                            "Extract structured candidate information accurately. "
-                            "Return ONLY valid JSON with no markdown or code blocks."
-                        )
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0
-            )
-        )
+        email_match = re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", raw_text)
+        phone_match = re.search(r"\+?\d[\d\s\-()]{7,}", raw_text)
 
-        content = response.choices[0].message.content.strip()
-
-        # Strip markdown code fences if GPT wraps the JSON
-        content = re.sub(r"^```(?:json)?\s*", "", content)
-        content = re.sub(r"\s*```$", "", content)
-
-        try:
-            return json.loads(content)
-
-        except Exception:
-            logger.error("Failed to parse OpenAI JSON response")
-            return {
-                "name": "",
-                "email": "",
-                "phone": "",
-                "skills": [],
-                "experience": [],
-                "education": [],
-                "certifications": [],
-                "projects": [],
-                "summary": "",
-                "raw_text": raw_text
-            }
+        return {
+            "name": "",
+            "email": email_match.group(0) if email_match else "",
+            "phone": phone_match.group(0) if phone_match else "",
+            "skills": [],
+            "experience": [],
+            "education": [],
+            "certifications": [],
+            "projects": [],
+            "summary": "",
+        }
