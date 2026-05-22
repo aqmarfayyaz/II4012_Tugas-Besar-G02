@@ -161,42 +161,19 @@ class JobMatcher:
                 )
 
                 ranked_candidates.append({
-
-                    "candidate_id":
-                        candidate.get("id"),
-
-                    "name":
-                        candidate.get("name"),
-
-                    "overall_score":
-                        round(
-                            combined_score,
-                            2
-                        ),
-
-                    "similarity_score":
-                        round(
-                            similarity_score,
-                            2
-                        ),
-
-                    "skill_score":
-                        round(
-                            skill_score,
-                            2
-                        ),
-
-                    "skill_details":
-                        skill_details,
-
-                    "category_match":
-                        category_match,
-
-                    "insight":
-                        insight,
-
-                    "rank":
-                        0
+                    "candidate_id":    candidate.get("id"),
+                    "name":            candidate.get("name"),
+                    "email":           candidate.get("email", ""),
+                    "skills":          candidate.get("skills", []),
+                    "summary":         candidate.get("summary", ""),
+                    "predicted_category": candidate.get("predicted_category", ""),
+                    "overall_score":   round(combined_score, 2),
+                    "similarity_score": round(similarity_score, 2),
+                    "skill_score":     round(skill_score, 2),
+                    "skill_details":   skill_details,
+                    "category_match":  category_match,
+                    "insight":         insight,
+                    "rank":            0,
                 })
 
             except Exception as e:

@@ -2,7 +2,7 @@
 Upload routes for CV and JD files
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, g
 import logging
 
 from utils.file_handler import save_uploaded_file
@@ -11,6 +11,8 @@ from services.data_cleaner import DataCleaner
 from services.department_classifier import DepartmentClassifier
 from services.job_classifier import JobFamilyClassifier
 from services.cv_parser import CVParser
+from services import firebase_db
+from routes.auth import require_auth
 from config import Config
 
 bp = Blueprint("upload", __name__, url_prefix="/api/upload")
@@ -26,6 +28,7 @@ cv_parser = CVParser(api_key=Config.LLAMA_API_KEY or None)
 
 
 @bp.route("/cv", methods=["POST"])
+@require_auth
 def upload_cv():
     """
     Upload and parse CV file
@@ -112,6 +115,8 @@ def upload_cv():
 
         prediction = job_family_classifier.predict(cleaned_data.get("full_text", ""))
 
+        project_id = request.form.get("project_id", "") or (request.get_json() or {}).get("project_id", "")
+
         response_data = {
             "candidate_id": candidate_id,
             "candidate_name": cleaned_data["name"],
@@ -122,7 +127,17 @@ def upload_cv():
             "predicted_label": prediction["label"],
             "prediction_confidence": prediction["confidence"],
             "parsed_source": parsed_source or "none",
+            "project_id": project_id,
+            "owner": g.current_username,
         }
+
+        # Persist candidate per-user to Firestore (or JSON fallback)
+        firebase_db.save_candidate(
+            owner=g.current_username,
+            project_id=project_id,
+            candidate_id=candidate_id,
+            data=response_data,
+        )
 
         return jsonify(
             format_response(
@@ -142,7 +157,32 @@ def upload_cv():
         ), 500
 
 
+@bp.route("/candidates", methods=["GET"])
+@require_auth
+def get_my_candidates():
+    """
+    Get all candidates uploaded by current user (optionally filtered by project)
+    ---
+    tags:
+      - Upload
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Candidate list
+    """
+    project_id = request.args.get("project_id")
+    candidates = firebase_db.list_candidates(owner=g.current_username, project_id=project_id)
+    if candidates is None:
+        candidates = []
+    return jsonify(format_response(
+        data={"candidates": candidates},
+        message=f"Retrieved {len(candidates)} candidates",
+    )), 200
+
+
 @bp.route("/jd", methods=["POST"])
+@require_auth
 def upload_jd():
     """
     Upload Job Description (can be file or text)

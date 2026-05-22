@@ -28,7 +28,7 @@
   },
   "alex@company.com": {
     "password": "pbkdf2:sha256:600000$qdHksL0HjAMyYEFD$f8cbe5929b1f8e64f80d6052f7463819d4c579ed19f8a42ab7ee9dda1db681c1",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGV4QGNvbXBhbnkuY29tIiwiaWF0IjoxNzc5MzU2ODMwLCJleHAiOjE3NzkzNjQwMzB9.NHW8vouvMzrMAt8HeeCG-10T846ubTJ-z8O2D47woFI",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGV4QGNvbXBhbnkuY29tIiwiaWF0IjoxNzc5NDA5MjM3LCJleHAiOjE3Nzk0OTU2Mzd9.5MhgOY4DZTk0VOO-t61Z4sLgnBq786pv1I5e3wXWkew",
     "profile": {
       "username": "alex@company.com",
       "email": "alex@company.com",
@@ -38,11 +38,21 @@
   },
   "veli@gmail.com": {
     "password": "pbkdf2:sha256:600000$sAitNk8I4BkIDEtZ$c2110401a8ca0e627363cb66d7e88bcff5501af816c733c9ce98a23e9eaf68b4",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ2ZWxpQGdtYWlsLmNvbSIsImlhdCI6MTc3OTM1NjkyMSwiZXhwIjoxNzc5MzY0MTIxfQ.qZkjQvIWGdQo34Kgex-RXg3ET6asWcWeHyOG5u8Vljw",
+    "token": null,
     "profile": {
       "username": "veli@gmail.com",
       "email": "veli@gmail.com",
       "name": "veli",
+      "provider": "password"
+    }
+  },
+  "grt@gmail.com": {
+    "password": "pbkdf2:sha256:600000$qWo6cH4aW08AL3rJ$de84a43d1ff056417fafde48f6f447c7b0e1e21a25f9d5d46a98db93e9e1b4ae",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJncnRAZ21haWwuY29tIiwiaWF0IjoxNzc5NDE0MjQ4LCJleHAiOjE3Nzk1MDA2NDh9.Y6qUY3F_86Y_2Wst3cJBJYzL_0ADA5izNvdrFD8icJ4",
+    "profile": {
+      "username": "grt@gmail.com",
+      "email": "grt@gmail.com",
+      "name": "grt",
       "provider": "password"
     }
   }

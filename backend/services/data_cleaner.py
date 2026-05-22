@@ -35,48 +35,73 @@ class DataCleaner:
         return normalized
     
     @staticmethod
+    def _coerce_text(value) -> str:
+        """Convert list-or-string to a single string."""
+        if isinstance(value, list):
+            return ' '.join(str(item) for item in value if item)
+        return value or ''
+
+    @staticmethod
     def structure_cv_data(raw_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Structure and clean raw CV data
-        
-        Args:
-            raw_data: Raw extracted CV data
-            
-        Returns:
-            Cleaned and structured CV data
+        Structure and clean raw CV data.
+        Accepts both raw keys (name, experience, raw_text) and
+        structured keys (candidate_name, experience_text, full_text).
         """
+        name = raw_data.get('name') or raw_data.get('candidate_name', '')
+
+        experience = (
+            raw_data.get('experience_text') or
+            raw_data.get('experience', '')
+        )
+        education = (
+            raw_data.get('education_text') or
+            raw_data.get('education', '')
+        )
+        full_text = (
+            raw_data.get('full_text') or
+            raw_data.get('raw_text', '')
+        )
+
         structured = {
-            'name': DataCleaner.clean_text(raw_data.get('name', '')),
+            'id': raw_data.get('id') or raw_data.get('candidate_id', ''),
+            'name': DataCleaner.clean_text(name),
             'email': raw_data.get('email', '').lower().strip(),
             'phone': raw_data.get('phone', ''),
             'skills': DataCleaner.normalize_skills(raw_data.get('skills', [])),
-            'experience_text': DataCleaner.clean_text(raw_data.get('experience', '')),
-            'education_text': DataCleaner.clean_text(raw_data.get('education', '')),
+            'experience_text': DataCleaner.clean_text(DataCleaner._coerce_text(experience)),
+            'education_text': DataCleaner.clean_text(DataCleaner._coerce_text(education)),
             'summary': DataCleaner.clean_text(raw_data.get('summary', '')),
-            'full_text': DataCleaner.clean_text(raw_data.get('raw_text', ''))
+            'full_text': DataCleaner.clean_text(DataCleaner._coerce_text(full_text)),
         }
-        
+
+        # Preserve prediction if already computed upstream
+        predicted = raw_data.get('predicted_category') or raw_data.get('predicted_label')
+        if predicted:
+            structured['predicted_category'] = predicted
+
         return structured
-    
+
     @staticmethod
     def structure_jd_data(raw_jd: Dict[str, str]) -> Dict[str, Any]:
         """
-        Structure and clean raw Job Description data
-        
-        Args:
-            raw_jd: Raw job description
-            
-        Returns:
-            Cleaned and structured JD data
+        Structure and clean raw Job Description data.
+        Accepts both 'title' and 'job_title'.
         """
+        job_title = raw_jd.get('job_title') or raw_jd.get('title', '')
+
         structured = {
-            'job_title': DataCleaner.clean_text(raw_jd.get('title', '')),
+            'job_title': DataCleaner.clean_text(job_title),
             'department': DataCleaner.clean_text(raw_jd.get('department', '')),
             'required_skills': DataCleaner.normalize_skills(raw_jd.get('required_skills', [])),
             'preferred_skills': DataCleaner.normalize_skills(raw_jd.get('preferred_skills', [])),
             'description': DataCleaner.clean_text(raw_jd.get('description', '')),
             'requirements': DataCleaner.clean_text(raw_jd.get('requirements', '')),
-            'full_text': DataCleaner.clean_text(raw_jd.get('full_text', ''))
+            'full_text': DataCleaner.clean_text(raw_jd.get('full_text', '')),
         }
-        
+
+        # Preserve job_category if already classified upstream
+        if raw_jd.get('job_category'):
+            structured['job_category'] = raw_jd['job_category']
+
         return structured

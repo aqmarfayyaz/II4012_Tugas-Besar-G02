@@ -1,7 +1,8 @@
-﻿from flask import Blueprint, request, jsonify
+﻿from flask import Blueprint, request, jsonify, g
 import logging
-
 import os
+import uuid
+from datetime import datetime
 
 from services.cv_parser import CVParser
 from models.embedder import TextEmbedder
@@ -10,6 +11,8 @@ from services.job_matcher import JobMatcher
 from services.data_cleaner import DataCleaner
 from services.department_classifier import DepartmentClassifier
 from services.job_classifier import JobFamilyClassifier
+from services import firebase_db
+from routes.auth import require_auth
 from config import Config
 
 from utils.helpers import format_response
@@ -137,9 +140,10 @@ def match_cv_jd():
             ), 400
 
         cv_data = DataCleaner.structure_cv_data(data["cv_data"])
-        cv_data["predicted_category"] = department_classifier.classify(
-            cv_data.get("full_text", "")
-        )
+        if not cv_data.get("predicted_category"):
+            cv_data["predicted_category"] = department_classifier.classify(
+                cv_data.get("full_text", "")
+            )
 
         jd_data = DataCleaner.structure_jd_data(data["jd_data"])
         jd_data["job_category"] = department_classifier.classify(
@@ -225,9 +229,10 @@ def rank_candidates():
         for candidate in candidates:
             try:
                 cleaned_candidate = DataCleaner.structure_cv_data(candidate)
-                cleaned_candidate["predicted_category"] = department_classifier.classify(
-                    cleaned_candidate.get("full_text", "")
-                )
+                if not cleaned_candidate.get("predicted_category"):
+                    cleaned_candidate["predicted_category"] = department_classifier.classify(
+                        cleaned_candidate.get("full_text", "")
+                    )
                 cleaned_candidates.append(cleaned_candidate)
             except Exception as e:
                 logger.warning(f"Candidate cleaning failed: {str(e)}")
@@ -307,3 +312,96 @@ def classify_text():
                 code=500,
             )
         ), 500
+
+
+@bp.route("/save-results", methods=["POST"])
+@require_auth
+def save_results():
+    """
+    Save screening result to Firestore for current user
+    ---
+    tags:
+      - Screening
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            project_id:
+              type: string
+            ranked_candidates:
+              type: array
+            jd_data:
+              type: object
+            job_category:
+              type: string
+    responses:
+      201:
+        description: Result saved
+    """
+    try:
+        data = request.get_json() or {}
+        project_id = data.get("project_id", "")
+        result_id = str(uuid.uuid4())
+        doc = {
+            "result_id": result_id,
+            "project_id": project_id,
+            "ranked_candidates": data.get("ranked_candidates", []),
+            "jd_data": data.get("jd_data", {}),
+            "job_category": data.get("job_category", ""),
+            "total_candidates": data.get("total_candidates", 0),
+            "created_at": datetime.utcnow().isoformat(),
+        }
+        saved = firebase_db.save_screening_result(
+            owner=g.current_username,
+            project_id=project_id,
+            result_id=result_id,
+            data=doc,
+        )
+        return jsonify(format_response(
+            data={"result_id": result_id, "saved_to_firestore": saved},
+            message="Screening result saved",
+            code=201,
+        )), 201
+    except Exception as exc:
+        logger.error(f"save_results error: {exc}")
+        return jsonify(format_response(message=str(exc), status="error", code=500)), 500
+
+
+@bp.route("/results", methods=["GET"])
+@require_auth
+def get_results():
+    """
+    Get screening results for current user
+    ---
+    tags:
+      - Screening
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: query
+        name: project_id
+        type: string
+        required: false
+    responses:
+      200:
+        description: Screening results list
+    """
+    try:
+        project_id = request.args.get("project_id")
+        results = firebase_db.list_screening_results(
+            owner=g.current_username, project_id=project_id
+        )
+        if results is None:
+            results = []
+        return jsonify(format_response(
+            data={"results": results, "total": len(results)},
+            message=f"Retrieved {len(results)} screening results",
+        )), 200
+    except Exception as exc:
+        logger.error(f"get_results error: {exc}")
+        return jsonify(format_response(message=str(exc), status="error", code=500)), 500

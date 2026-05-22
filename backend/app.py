@@ -12,8 +12,12 @@ from routes import upload, screening, candidates, auth, projects
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    # Enable CORS for frontend
-    CORS(app)
+    # Enable CORS for frontend — explicitly allow Authorization header
+    CORS(app, resources={r"/api/*": {
+        "origins": "*",
+        "allow_headers": ["Content-Type", "Authorization", "Accept"],
+        "methods": ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"],
+    }})
 
     swagger_template = {
         "swagger": "2.0",

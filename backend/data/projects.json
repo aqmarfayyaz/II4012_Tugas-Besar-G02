@@ -1,0 +1,44 @@
+{
+  "b41ba009-8284-4698-9d19-fc731f483e27": {
+    "id": "b41ba009-8284-4698-9d19-fc731f483e27",
+    "name": "aa",
+    "job_title": "a",
+    "department": "a",
+    "job_description": "a",
+    "required_skills": [
+      "a"
+    ],
+    "employment_type": "full-time",
+    "start_date": "2026-02-02",
+    "end_date": "2025-01-01",
+    "hiring_quota": 2,
+    "hiring_manager": "a",
+    "priority": "medium",
+    "notes": "",
+    "status": "draft",
+    "created_at": "2026-05-22T07:22:05.145558",
+    "updated_at": "2026-05-22T07:22:05.145558"
+  },
+  "d971b188-a669-461a-a0ea-8cd744d0d3fa": {
+    "id": "d971b188-a669-461a-a0ea-8cd744d0d3fa",
+    "name": "data analyst intern",
+    "job_title": "data analyst intern",
+    "department": "data",
+    "job_description": "bi, tableau",
+    "required_skills": [
+      "python",
+      "sql"
+    ],
+    "employment_type": "full-time",
+    "start_date": "2026-02-02",
+    "end_date": "2025-01-01",
+    "hiring_quota": 2,
+    "hiring_manager": "me",
+    "priority": "medium",
+    "notes": "",
+    "status": "draft",
+    "created_by": "grt@gmail.com",
+    "created_at": "2026-05-22T09:34:55.813141",
+    "updated_at": "2026-05-22T09:34:55.813141"
+  }
+}

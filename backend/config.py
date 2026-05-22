@@ -17,7 +17,7 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret')
     JWT_SECRET = os.getenv('JWT_SECRET', SECRET_KEY)
     JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
-    JWT_EXP_MINUTES = int(os.getenv('JWT_EXP_MINUTES', '120'))
+    JWT_EXP_MINUTES = int(os.getenv('JWT_EXP_MINUTES', '1440'))  # 24h default
     SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
     
     # Upload settings

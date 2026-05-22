@@ -1,21 +1,26 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAVJ1uH2XT81HzhS4Njhg-pR2_31D9BalM",
-  authDomain: "talentpulse-ai.firebaseapp.com",
-  projectId: "talentpulse-ai",
-  storageBucket: "talentpulse-ai.firebasestorage.app",
-  messagingSenderId: "858575621143",
-  appId: "1:858575621143:web:794a0d5930a63ba91a6052",
-  measurementId: "G-LVSL160RG7"
+  apiKey:            process.env.REACT_APP_FIREBASE_API_KEY            || "AIzaSyAVJ1uH2XT81HzhS4Njhg-pR2_31D9BalM",
+  authDomain:        process.env.REACT_APP_FIREBASE_AUTH_DOMAIN        || "talentpulse-ai.firebaseapp.com",
+  projectId:         process.env.REACT_APP_FIREBASE_PROJECT_ID         || "talentpulse-ai",
+  storageBucket:     process.env.REACT_APP_FIREBASE_STORAGE_BUCKET     || "talentpulse-ai.firebasestorage.app",
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "858575621143",
+  appId:             process.env.REACT_APP_FIREBASE_APP_ID             || "1:858575621143:web:794a0d5930a63ba91a6052",
+  measurementId:     process.env.REACT_APP_FIREBASE_MEASUREMENT_ID     || "G-LVSL160RG7",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+export const db = getFirestore(app);
+
+let analytics = null;
+try {
+  analytics = getAnalytics(app);
+} catch (_) {
+  // Analytics may fail in non-browser environments — ignore
+}
+export { analytics };
+export default app;

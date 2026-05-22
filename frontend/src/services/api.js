@@ -11,22 +11,40 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
-  if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('current_project_id');
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const getHealth = () => api.get('/health');
 
 // Upload endpoints
-export const uploadCV = (file) => {
+export const uploadCV = (file, projectId = '') => {
   const formData = new FormData();
   formData.append('file', file);
+  if (projectId) formData.append('project_id', projectId);
   return api.post('/upload/cv', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+
+export const getMyCandidates = (projectId = '') =>
+  api.get('/upload/candidates', { params: projectId ? { project_id: projectId } : {} });
 
 export const uploadJD = (file, metadata = {}) => {
   const formData = new FormData();
@@ -51,6 +69,12 @@ export const matchCVJD = (cvData, jdData) => {
 export const rankCandidates = (candidates, jdData) => {
   return api.post('/screening/rank', { candidates, jd_data: jdData });
 };
+
+export const saveScreeningResults = (data) =>
+  api.post('/screening/save-results', data);
+
+export const getScreeningResults = (projectId = '') =>
+  api.get('/screening/results', { params: projectId ? { project_id: projectId } : {} });
 
 // Candidate endpoints
 export const getCandidates = () => api.get('/candidates');
