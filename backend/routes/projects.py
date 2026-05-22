@@ -12,6 +12,7 @@ from datetime import datetime
 from utils.helpers import format_response
 from routes.auth import require_auth
 from services import firebase_db
+from routes.candidates import _candidate_view, _get_project, _latest_score_map
 
 bp = Blueprint("projects", __name__, url_prefix="/api/projects")
 
@@ -150,6 +151,114 @@ def list_projects():
         data={"projects": project_list},
         message=f"Retrieved {len(project_list)} projects",
     )), 200
+
+
+@bp.route("/<project_id>/candidates", methods=["GET"])
+@require_auth
+def get_project_candidates(project_id):
+    """
+    Get candidates for a specific project
+    ---
+    tags:
+      - Projects
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: project_id
+        required: true
+        type: string
+      - in: query
+        name: search
+        type: string
+        required: false
+      - in: query
+        name: status
+        type: string
+        required: false
+      - in: query
+        name: min_score
+        type: number
+        required: false
+      - in: query
+        name: max_score
+        type: number
+        required: false
+      - in: query
+        name: page
+        type: integer
+        required: false
+      - in: query
+        name: page_size
+        type: integer
+        required: false
+    responses:
+      200:
+        description: Candidate list
+    """
+    try:
+        search = request.args.get("search", "").strip().lower()
+        status_param = request.args.get("status", "").strip().lower()
+        min_score = request.args.get("min_score")
+        max_score = request.args.get("max_score")
+        page = int(request.args.get("page", "1") or 1)
+        page_size = int(request.args.get("page_size", "20") or 20)
+
+        candidates = firebase_db.list_candidates(
+            owner=g.current_username, project_id=project_id
+        ) or []
+
+        project = _get_project(project_id)
+        score_map = _latest_score_map(g.current_username, project_id)
+        enriched = [_candidate_view(candidate, project, score_map) for candidate in candidates]
+
+        if search:
+            def matches(item):
+                return (
+                    search in (item.get("name") or "").lower()
+                    or search in (item.get("email") or "").lower()
+                    or search in (item.get("applied_position") or "").lower()
+                )
+            enriched = [c for c in enriched if matches(c)]
+
+        if status_param:
+            statuses = {s.strip() for s in status_param.split(",") if s.strip()}
+            enriched = [c for c in enriched if c.get("status") in statuses]
+
+        if min_score is not None:
+            try:
+                min_score_val = float(min_score)
+                enriched = [c for c in enriched if float(c.get("match_score", 0)) >= min_score_val]
+            except ValueError:
+                pass
+
+        if max_score is not None:
+            try:
+                max_score_val = float(max_score)
+                enriched = [c for c in enriched if float(c.get("match_score", 0)) <= max_score_val]
+            except ValueError:
+                pass
+
+        enriched.sort(key=lambda x: (x.get("match_score", 0), x.get("created_at", "")), reverse=True)
+
+        total = len(enriched)
+        page = max(page, 1)
+        page_size = max(min(page_size, 100), 1)
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated = enriched[start:end]
+
+        return jsonify(format_response(
+            data={
+                "candidates": paginated,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+            },
+            message=f"Retrieved {len(paginated)} candidates",
+        )), 200
+    except Exception as exc:
+        return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
 
 @bp.route("", methods=["POST"])

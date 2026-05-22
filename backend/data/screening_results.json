@@ -1,0 +1,83 @@
+{
+  "0570f101-3a55-4733-8aa8-f0fe7f983ea0": {
+    "result_id": "0570f101-3a55-4733-8aa8-f0fe7f983ea0",
+    "project_id": "e2d924e4-0d5a-46c5-990c-eff0bfc8a506",
+    "ranked_candidates": [
+      {
+        "candidate_id": "CV_IN__20260522210832",
+        "category_match": 0,
+        "email": "",
+        "insight": "\u274c Limited match for this role.",
+        "name": "CV_Inggried Amelia Deswanty_General",
+        "overall_score": 0,
+        "predicted_category": "Unknown",
+        "rank": 1,
+        "similarity_score": 0,
+        "skill_details": {},
+        "skill_score": 0,
+        "skills": [],
+        "summary": ""
+      },
+      {
+        "candidate_id": "CV_IN__20260522210846",
+        "category_match": 0,
+        "email": "",
+        "insight": "\u274c Limited match for this role.",
+        "name": "CV_Inggried Amelia Deswanty_Tech",
+        "overall_score": 0,
+        "predicted_category": "Unknown",
+        "rank": 2,
+        "similarity_score": 0,
+        "skill_details": {},
+        "skill_score": 0,
+        "skills": [],
+        "summary": ""
+      }
+    ],
+    "jd_data": {
+      "full_text": "data analyst that work with daily dashboard for FMCG",
+      "jd_id": "JD_92736157",
+      "job_category": "Data",
+      "job_title": "Job Position",
+      "preferred_skills": [],
+      "required_skills": []
+    },
+    "job_category": "Data",
+    "total_candidates": 2,
+    "created_at": "2026-05-22T14:15:17.025668",
+    "owner": "inggried@gmail.com"
+  },
+  "58b2439e-71fe-4b95-931a-3711ffde74e9": {
+    "result_id": "58b2439e-71fe-4b95-931a-3711ffde74e9",
+    "project_id": "e2d924e4-0d5a-46c5-990c-eff0bfc8a506",
+    "ranked_candidates": [
+      {
+        "candidate_id": "CV_IN__20260522211610",
+        "category_match": 1,
+        "email": "",
+        "insight": "\u274c Limited match for this role.",
+        "name": "CV_Inggried Amelia Deswanty (2)",
+        "overall_score": 15,
+        "predicted_category": "Unknown",
+        "rank": 1,
+        "similarity_score": 0,
+        "skill_details": {},
+        "skill_score": 0,
+        "skills": [],
+        "summary": ""
+      }
+    ],
+    "jd_data": {
+      "full_text": "Analyst job",
+      "jd_id": "JD_41453413",
+      "job_category": "Unknown",
+      "job_title": "Job Position",
+      "preferred_skills": [],
+      "required_skills": []
+    },
+    "job_category": "Unknown",
+    "total_candidates": 1,
+    "created_at": "2026-05-22T14:16:20.245578",
+    "owner": "inggried@gmail.com"
+  }
+}

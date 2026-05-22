@@ -1,75 +1,73 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { getProjectCandidates, updateCandidateStatus } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+
+const STATUS_OPTIONS = ['applied', 'review', 'shortlisted', 'interviewed', 'rejected'];
 
 const Candidates = () => {
   const navigate = useNavigate();
+  const { currentProject } = useAuth();
+
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchDebounced, setSearchDebounced] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [scoreFilter, setScoreFilter] = useState('all');
+  const [candidates, setCandidates] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [statusUpdating, setStatusUpdating] = useState({});
 
-  const [candidates] = useState([
-    {
-      id: '1',
-      initials: 'JD',
-      name: 'John Doe',
-      email: 'john@example.com',
-      position: 'Senior Developer',
-      department: 'Engineering',
-      matchScore: 92,
-      skills: ['React', 'Node.js', 'Python', 'AWS'],
-      status: 'shortlisted',
-      uploadDate: '2026-05-05',
-    },
-    {
-      id: '2',
-      initials: 'JS',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      position: 'Full Stack Developer',
-      department: 'Engineering',
-      matchScore: 85,
-      skills: ['Vue.js', 'Django', 'PostgreSQL', 'Docker'],
-      status: 'interviewed',
-      uploadDate: '2026-05-04',
-    },
-    {
-      id: '3',
-      initials: 'MJ',
-      name: 'Mike Johnson',
-      email: 'mike@example.com',
-      position: 'Frontend Engineer',
-      department: 'Engineering',
-      matchScore: 78,
-      skills: ['React', 'TypeScript', 'Tailwind CSS'],
-      status: 'applied',
-      uploadDate: '2026-05-03',
-    },
-    {
-      id: '4',
-      initials: 'SB',
-      name: 'Sarah Brown',
-      email: 'sarah@example.com',
-      position: 'Product Manager',
-      department: 'Product',
-      matchScore: 88,
-      skills: ['Product Strategy', 'Analytics', 'Agile'],
-      status: 'shortlisted',
-      uploadDate: '2026-05-02',
-    },
-    {
-      id: '5',
-      initials: 'DW',
-      name: 'David Wilson',
-      email: 'david@example.com',
-      position: 'UX Designer',
-      department: 'Design',
-      matchScore: 81,
-      skills: ['Figma', 'User Research', 'Prototyping'],
-      status: 'interviewed',
-      uploadDate: '2026-05-01',
-    },
-  ]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounced(searchTerm.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchDebounced, statusFilter, scoreFilter]);
+
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      if (!currentProject?.id) {
+        setCandidates([]);
+        setTotal(0);
+        return;
+      }
+
+      setLoading(true);
+      setError('');
+      try {
+        const params = { page, page_size: pageSize };
+        if (searchDebounced) params.search = searchDebounced;
+        if (statusFilter !== 'all') params.status = statusFilter;
+        if (scoreFilter === 'high') params.min_score = 85;
+        if (scoreFilter === 'medium') {
+          params.min_score = 70;
+          params.max_score = 84.99;
+        }
+        if (scoreFilter === 'low') params.max_score = 69.99;
+
+        const response = await getProjectCandidates(currentProject.id, params);
+        const payload = response.data?.data || response.data;
+        const list = payload.candidates || payload.data?.candidates || [];
+        setCandidates(list);
+        setTotal(payload.total || payload.data?.total || list.length);
+      } catch (err) {
+        setError(err?.response?.data?.message || 'Failed to load candidates.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCandidates();
+  }, [currentProject, page, pageSize, searchDebounced, statusFilter, scoreFilter]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -79,6 +77,8 @@ const Candidates = () => {
         return { bg: 'bg-blue-50', text: 'text-blue-700', icon: 'person', border: 'border-blue-200' };
       case 'rejected':
         return { bg: 'bg-red-50', text: 'text-red-700', icon: 'close', border: 'border-red-200' };
+      case 'review':
+        return { bg: 'bg-amber-50', text: 'text-amber-700', icon: 'schedule', border: 'border-amber-200' };
       default:
         return { bg: 'bg-slate-50', text: 'text-slate-700', icon: 'mail', border: 'border-slate-200' };
     }
@@ -90,39 +90,64 @@ const Candidates = () => {
     return 'low';
   };
 
-  const filteredCandidates = candidates.filter((candidate) => {
-    const matchesSearch =
-      candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.position.toLowerCase().includes(searchTerm.toLowerCase());
+  const initialsFor = (name = '') => {
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length === 0) return 'NA';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  };
 
-    const matchesStatus = statusFilter === 'all' || candidate.status === statusFilter;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-    const matchesScore =
-      scoreFilter === 'all' ||
-      (scoreFilter === 'high' && candidate.matchScore >= 85) ||
-      (scoreFilter === 'medium' && candidate.matchScore >= 70 && candidate.matchScore < 85) ||
-      (scoreFilter === 'low' && candidate.matchScore < 70);
+  const topSkills = useMemo(() => {
+    const counts = new Map();
+    candidates.forEach((candidate) => {
+      (candidate.skills || []).forEach((skill) => {
+        const key = skill.toLowerCase();
+        counts.set(key, (counts.get(key) || 0) + 1);
+      });
+    });
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([skill, count]) => ({ skill, count }));
+  }, [candidates]);
 
-    return matchesSearch && matchesStatus && matchesScore;
-  });
+  const handleStatusChange = async (candidateId, nextStatus) => {
+    setStatusUpdating((prev) => ({ ...prev, [candidateId]: true }));
+    try {
+      await updateCandidateStatus(candidateId, nextStatus);
+      setCandidates((prev) =>
+        prev.map((candidate) =>
+          candidate.id === candidateId ? { ...candidate, status: nextStatus } : candidate
+        )
+      );
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to update status.');
+    } finally {
+      setStatusUpdating((prev) => ({ ...prev, [candidateId]: false }));
+    }
+  };
 
   return (
     <Layout title="Candidates">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
-        {/* Header Section */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Candidate Pool</h1>
-            <p className="text-body-md text-secondary mt-1">Manage and evaluate all candidates across your recruitment pipeline</p>
+            <p className="text-body-md text-secondary mt-1">
+              Manage and evaluate candidates from AI screening for {currentProject?.name || 'your project'}
+            </p>
           </div>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">add</span>
-            Add Candidate
+          <button
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all flex items-center gap-2"
+            onClick={() => navigate('/upload')}
+          >
+            <span className="material-symbols-outlined text-sm">upload</span>
+            Upload CV
           </button>
         </div>
 
-        {/* Search and Filters Bar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-4">
           <div className="relative">
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 material-symbols-outlined text-secondary text-xl">search</span>
@@ -135,11 +160,10 @@ const Candidates = () => {
             />
           </div>
 
-          {/* Filter Pills */}
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <span className="text-label-sm text-secondary font-semibold">Status:</span>
-              {['all', 'applied', 'shortlisted', 'interviewed', 'rejected'].map((status) => (
+              {['all', ...STATUS_OPTIONS].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
@@ -173,7 +197,12 @@ const Candidates = () => {
           </div>
         </div>
 
-        {/* Candidates Table */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+            {error}
+          </div>
+        )}
+
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
@@ -187,61 +216,62 @@ const Candidates = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredCandidates.length > 0 ? (
-                filteredCandidates.map((candidate) => {
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-10 text-center text-slate-500">
+                    Loading candidates...
+                  </td>
+                </tr>
+              ) : candidates.length > 0 ? (
+                candidates.map((candidate) => {
                   const statusColor = getStatusColor(candidate.status);
                   return (
                     <tr
                       key={candidate.id}
                       className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                     >
-                      {/* Candidate Name & Email */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-label-sm font-bold">
-                            {candidate.initials}
+                            {initialsFor(candidate.name)}
                           </div>
                           <div>
-                            <p className="text-body-md font-semibold text-slate-900">{candidate.name}</p>
-                            <p className="text-label-sm text-slate-500">{candidate.email}</p>
+                            <p className="text-body-md font-semibold text-slate-900">{candidate.name || 'Unnamed'}</p>
+                            <p className="text-label-sm text-slate-500">{candidate.email || '-'}</p>
                           </div>
                         </div>
                       </td>
 
-                      {/* Position */}
                       <td className="px-6 py-4">
-                        <p className="text-body-md text-slate-700 font-medium">{candidate.position}</p>
+                        <p className="text-body-md text-slate-700 font-medium">{candidate.applied_position || '-'}</p>
                       </td>
 
-                      {/* Department */}
                       <td className="px-6 py-4">
-                        <span className="text-body-md text-slate-600">{candidate.department}</span>
+                        <span className="text-body-md text-slate-600">{candidate.department || '-'}</span>
                       </td>
 
-                      {/* Match Score */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
-                                  getScoreCategory(candidate.matchScore) === 'high'
+                                  getScoreCategory(candidate.match_score) === 'high'
                                     ? 'bg-green-500'
-                                    : getScoreCategory(candidate.matchScore) === 'medium'
+                                    : getScoreCategory(candidate.match_score) === 'medium'
                                     ? 'bg-yellow-500'
                                     : 'bg-orange-500'
                                 }`}
-                                style={{ width: `${candidate.matchScore}%` }}
+                                style={{ width: `${Math.min(candidate.match_score || 0, 100)}%` }}
                               ></div>
                             </div>
                           </div>
-                          <span className="text-label-sm font-bold text-slate-900 w-10 text-right">
-                            {candidate.matchScore}%
+                          <span className="text-label-sm font-bold text-slate-900 w-12 text-right">
+                            {candidate.match_score ? `${Math.round(candidate.match_score)}%` : '--'}
                           </span>
                         </div>
                       </td>
 
-                      {/* Status */}
                       <td className="px-6 py-4">
                         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${statusColor.bg} ${statusColor.text} ${statusColor.border}`}>
                           <span className="material-symbols-outlined text-sm">{statusColor.icon}</span>
@@ -249,9 +279,22 @@ const Candidates = () => {
                             {candidate.status.charAt(0).toUpperCase() + candidate.status.slice(1)}
                           </span>
                         </div>
+                        <div className="mt-2">
+                          <select
+                            value={candidate.status}
+                            disabled={statusUpdating[candidate.id]}
+                            onChange={(e) => handleStatusChange(candidate.id, e.target.value)}
+                            className="border border-slate-200 text-slate-700 text-xs rounded-md px-2 py-1 bg-white"
+                          >
+                            {STATUS_OPTIONS.map((status) => (
+                              <option key={status} value={status}>
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </td>
 
-                      {/* Actions */}
                       <td className="px-6 py-4">
                         <button
                           onClick={() => navigate(`/candidate/${candidate.id}`)}
@@ -270,7 +313,7 @@ const Candidates = () => {
                     <span className="material-symbols-outlined text-5xl text-slate-300 mb-3 inline-block">
                       person_off
                     </span>
-                    <p className="text-body-md text-slate-600 mt-3">No candidates found matching your filters</p>
+                    <p className="text-body-md text-slate-600 mt-3">No candidates found for these filters.</p>
                   </td>
                 </tr>
               )}
@@ -278,25 +321,44 @@ const Candidates = () => {
           </table>
         </div>
 
-        {/* Skills Overview */}
-        {filteredCandidates.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Showing {candidates.length} of {total} candidates
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-3 py-1 border border-slate-200 rounded-lg text-sm disabled:opacity-50"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page <= 1}
+            >
+              Previous
+            </button>
+            <span className="text-sm text-slate-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="px-3 py-1 border border-slate-200 rounded-lg text-sm disabled:opacity-50"
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
+        {topSkills.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <h3 className="text-body-md font-semibold text-primary mb-4">Top Skills in Filtered Results</h3>
+            <h3 className="text-body-md font-semibold text-primary mb-4">Top Skills in Results</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {['React', 'Python', 'AWS', 'TypeScript'].map((skill, idx) => {
-                const skillCount = filteredCandidates.filter((c) =>
-                  c.skills.some((s) => s.toLowerCase().includes(skill.toLowerCase()))
-                ).length;
-                return (
-                  <div key={skill} className="p-4 bg-slate-50 rounded-lg">
-                    <p className="text-label-sm text-secondary uppercase font-semibold">{skill}</p>
-                    <p className="text-h2 font-h2 text-primary mt-1">{skillCount}</p>
-                    <p className="text-label-sm text-slate-600 mt-1">
-                      {Math.round((skillCount / filteredCandidates.length) * 100)}% of results
-                    </p>
-                  </div>
-                );
-              })}
+              {topSkills.map((item) => (
+                <div key={item.skill} className="p-4 bg-slate-50 rounded-lg">
+                  <p className="text-label-sm text-secondary uppercase font-semibold">{item.skill}</p>
+                  <p className="text-h2 font-h2 text-primary mt-1">{item.count}</p>
+                  <p className="text-label-sm text-slate-600 mt-1">
+                    {Math.round((item.count / Math.max(candidates.length, 1)) * 100)}% of results
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}

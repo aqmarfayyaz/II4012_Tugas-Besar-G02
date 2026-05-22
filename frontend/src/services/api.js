@@ -77,8 +77,11 @@ export const getScreeningResults = (projectId = '') =>
   api.get('/screening/results', { params: projectId ? { project_id: projectId } : {} });
 
 // Candidate endpoints
-export const getCandidates = () => api.get('/candidates');
+export const getCandidates = (params = {}) => api.get('/candidates', { params });
+export const getProjectCandidates = (projectId, params = {}) =>
+  api.get(`/projects/${projectId}/candidates`, { params });
 export const getCandidate = (id) => api.get(`/candidates/${id}`);
+export const updateCandidateStatus = (id, status) => api.patch(`/candidates/${id}/status`, { status });
 export const createCandidate = (data) => api.post('/candidates', data);
 export const deleteCandidate = (id) => api.delete(`/candidates/${id}`);
 

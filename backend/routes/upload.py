@@ -3,7 +3,9 @@ Upload routes for CV and JD files
 """
 
 from flask import Blueprint, request, jsonify, current_app, g
+from datetime import datetime
 import logging
+import os
 
 from utils.file_handler import save_uploaded_file
 from utils.helpers import format_response, generate_candidate_id
@@ -115,7 +117,21 @@ def upload_cv():
 
         prediction = job_family_classifier.predict(cleaned_data.get("full_text", ""))
 
-        project_id = request.form.get("project_id", "") or (request.get_json() or {}).get("project_id", "")
+        json_payload = request.get_json(silent=True) or {}
+        project_id = request.form.get("project_id", "") or json_payload.get("project_id", "")
+
+        applied_position = (
+            request.form.get("applied_position")
+            or request.form.get("position")
+            or json_payload.get("applied_position")
+            or json_payload.get("position")
+            or ""
+        )
+        department = (
+            request.form.get("department")
+            or json_payload.get("department")
+            or ""
+        )
 
         response_data = {
             "candidate_id": candidate_id,
@@ -124,10 +140,18 @@ def upload_cv():
             "skills": cleaned_data["skills"],
             "summary": summary,
             "full_text": cleaned_data.get("full_text", ""),
+            "experience_text": cleaned_data.get("experience_text", ""),
+            "education_text": cleaned_data.get("education_text", ""),
             "predicted_label": prediction["label"],
             "prediction_confidence": prediction["confidence"],
             "parsed_source": parsed_source or "none",
             "project_id": project_id,
+            "applied_position": applied_position,
+            "department": department,
+            "status": "applied",
+            "cv_file_name": os.path.basename(result),
+            "cv_file_path": result,
+            "created_at": datetime.utcnow().isoformat(),
             "owner": g.current_username,
         }
 
