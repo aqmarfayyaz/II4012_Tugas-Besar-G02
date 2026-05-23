@@ -33,6 +33,16 @@ job_matcher = JobMatcher(similarity_scorer=similarity_scorer)
 cv_parser = CVParser()
 
 
+def _recommendation_for_score(score: float) -> str:
+    if score >= 80:
+        return "Highly Recommended"
+    if score >= 60:
+        return "Potential Match"
+    if score >= 40:
+        return "Moderate Match"
+    return "Low Match"
+
+
 @bp.route("/parse-cv", methods=["POST"])
 def parse_cv():
     """
@@ -362,6 +372,26 @@ def save_results():
             result_id=result_id,
             data=doc,
         )
+
+        ranked_candidates = data.get("ranked_candidates", [])
+        for candidate in ranked_candidates:
+            candidate_id = candidate.get("candidate_id")
+            if not candidate_id:
+                continue
+            score = float(candidate.get("overall_score", 0))
+            firebase_db.update_candidate(
+                candidate_id,
+                {
+                    "match_score": score,
+                    "similarity_score": float(candidate.get("similarity_score", 0)),
+                    "skill_score": float(candidate.get("skill_score", 0)),
+                    "skill_details": candidate.get("skill_details", {}),
+                    "recommendation": _recommendation_for_score(score),
+                    "rank": candidate.get("rank", 0),
+                    "last_screened_at": doc["created_at"],
+                    "screening_result_id": result_id,
+                },
+            )
         return jsonify(format_response(
             data={"result_id": result_id, "saved_to_firestore": saved},
             message="Screening result saved",
