@@ -2,11 +2,14 @@
 Main Flask Application for AI-based CV Screening System
 """
 
+import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flasgger import Swagger
 from config import Config
-from routes import upload, screening, candidates, auth, projects
+from routes import upload, screening, candidates, auth, projects, dashboard
+
+logging.basicConfig(level=logging.INFO)
 
 
 def create_app(config_class=Config):
@@ -95,8 +98,12 @@ def create_app(config_class=Config):
     app.register_blueprint(candidates.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(projects.bp)
+    app.register_blueprint(dashboard.bp)
 
     # Initialize OAuth clients
+    _logger = logging.getLogger(__name__)
+    _logger.info("GOOGLE_CLIENT_ID loaded: %s", bool(app.config.get('GOOGLE_CLIENT_ID')))
+    _logger.info("GOOGLE_CLIENT_SECRET loaded: %s", bool(app.config.get('GOOGLE_CLIENT_SECRET')))
     auth.init_oauth(app)
 
     # Health check endpoint

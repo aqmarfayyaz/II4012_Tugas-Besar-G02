@@ -5,7 +5,9 @@ Configuration settings for the application
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from project root regardless of the working directory Flask starts from
+_dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env')
+load_dotenv(_dotenv_path, override=True)
 
 class Config:
     """Base configuration"""

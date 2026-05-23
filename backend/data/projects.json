@@ -40,5 +40,27 @@
     "created_by": "grt@gmail.com",
     "created_at": "2026-05-22T09:34:55.813141",
     "updated_at": "2026-05-22T09:34:55.813141"
+  },
+  "1f802549-d7b1-4470-96cf-46444d156f72": {
+    "id": "1f802549-d7b1-4470-96cf-46444d156f72",
+    "name": "data analyst",
+    "job_title": "data analyst intern",
+    "department": "IT",
+    "job_description": "We are looking for a Data Analyst Intern to support our team in collecting, analyzing, and interpreting data to help drive business decisions. The intern will assist in building dashboards, generating reports, cleaning datasets, identifying trends, and providing actionable insights from operational and recruitment data. You will collaborate closely with cross-functional teams to understand business needs and help optimize processes through data-driven analysis. This role is ideal for someone who is detail-oriented, analytical, and eager to gain hands-on experience with real-world data projects.",
+    "required_skills": [
+      "SQL",
+      "Python"
+    ],
+    "employment_type": "internship",
+    "start_date": "2026-05-24",
+    "end_date": "2026-05-31",
+    "hiring_quota": 5,
+    "hiring_manager": "Head of IT",
+    "priority": "medium",
+    "notes": "We are seeking candidates who are proactive, curious, and passionate about data analytics. Basic knowledge of SQL, spreadsheets, Python, or data visualization tools such as Power BI/Tableau is preferred. Strong problem-solving skills, attention to detail, and the ability to communicate insights clearly are highly valued. Prior internship, organizational, or academic project experience related to data analysis will be a plus, but candidates with a strong willingness to learn and grow are encouraged to apply.",
+    "status": "draft",
+    "created_by": "veliciagbrl@gmail.com",
+    "created_at": "2026-05-23T10:32:29.973756",
+    "updated_at": "2026-05-23T10:32:29.973756"
   }
 }

@@ -1,10 +1,13 @@
 from flask import Blueprint, request, jsonify, current_app, redirect, g
+import logging
 import os
 import json
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Optional
 from urllib.parse import urlencode
+
+logger = logging.getLogger(__name__)
 
 import jwt
 from authlib.integrations.flask_client import OAuth
@@ -22,15 +25,29 @@ USERS_FILE = os.path.join(DATA_DIR, 'users.json')
 def init_oauth(app):
     """Initialize OAuth clients"""
     oauth.init_app(app)
-    if app.config.get('GOOGLE_CLIENT_ID') and app.config.get('GOOGLE_CLIENT_SECRET'):
+    client_id = app.config.get('GOOGLE_CLIENT_ID')
+    client_secret = app.config.get('GOOGLE_CLIENT_SECRET')
+    if client_id and client_secret:
         oauth.register(
             name='google',
-            client_id=app.config.get('GOOGLE_CLIENT_ID'),
-            client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
+            client_id=client_id,
+            client_secret=client_secret,
             server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
             client_kwargs={
                 'scope': 'openid email profile'
             }
+        )
+        logger.info("Google OAuth registered (client_id=%s...)", client_id[:8])
+    else:
+        missing = []
+        if not client_id:
+            missing.append('GOOGLE_CLIENT_ID')
+        if not client_secret:
+            missing.append('GOOGLE_CLIENT_SECRET')
+        logger.warning(
+            "Google OAuth NOT configured — missing environment variables: %s. "
+            "Set them in your .env file to enable Google login.",
+            ', '.join(missing)
         )
 
 
@@ -269,9 +286,13 @@ def google_callback():
       400:
         description: Missing email
     """
-    client = oauth.create_client('google')
-    client.authorize_access_token()
-    userinfo = client.get('https://openidconnect.googleapis.com/v1/userinfo').json()
+    try:
+        client = oauth.create_client('google')
+        client.authorize_access_token()
+        userinfo = client.get('https://openidconnect.googleapis.com/v1/userinfo').json()
+    except Exception as exc:
+        logger.error("Google OAuth callback error: %s", exc)
+        return jsonify(format_response(message='Google OAuth callback failed', status='error', code=500)), 500
 
     email = userinfo.get('email')
     name = userinfo.get('name') or userinfo.get('given_name')

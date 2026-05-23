@@ -55,5 +55,15 @@
       "name": "grt",
       "provider": "password"
     }
+  },
+  "veliciagbrl@gmail.com": {
+    "password": null,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ2ZWxpY2lhZ2JybEBnbWFpbC5jb20iLCJpYXQiOjE3Nzk1MDU3ODksImV4cCI6MTc3OTU5MjE4OX0.Co3yCyelUFytJTmaeoNVWhnNCwAkGeqPUUosWU6yTQY",
+    "profile": {
+      "username": "veliciagbrl@gmail.com",
+      "email": "veliciagbrl@gmail.com",
+      "name": "Velicia Christina Gabriel",
+      "provider": "google"
+    }
   }
 }
