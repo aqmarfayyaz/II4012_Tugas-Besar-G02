@@ -4,6 +4,7 @@ import {
   registerUser,
   logoutUser,
   getProfile,
+  fetchMyProfile,
   getGoogleAuthUrl,
   getProjects,
   createProject as createProjectApi,
@@ -158,6 +159,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshProfile = async () => {
+    try {
+      const resp = await fetchMyProfile();
+      const payload = resp.data?.data || resp.data;
+      const profile = payload?.profile || payload;
+      setUser(profile);
+    } catch {
+      // silently ignore — stale user state is acceptable
+    }
+  };
+
   const deleteProject = async (projectId) => {
     await deleteProjectApi(projectId);
     setProjects((prev) => prev.filter((project) => project.id !== projectId));
@@ -188,6 +200,7 @@ export const AuthProvider = ({ children }) => {
         register,
         startGoogleAuth,
         logout,
+        refreshProfile,
         createProject,
         updateProject,
         selectProject,

@@ -5,6 +5,7 @@ Project management routes — stores data in Firebase Firestore
 
 from flask import Blueprint, request, jsonify, g
 import json
+import logging
 import os
 import uuid
 from datetime import datetime
@@ -12,6 +13,7 @@ from datetime import datetime
 from utils.helpers import format_response
 from routes.auth import require_auth
 from services import firebase_db
+from services.activity_log import log_activity
 from routes.candidates import _candidate_view, _get_project, _latest_score_map
 
 bp = Blueprint("projects", __name__, url_prefix="/api/projects")
@@ -129,6 +131,9 @@ def _validate_payload(data, partial=False):
 
 # ─── Routes ───────────────────────────────────────────────────────────────
 
+logger = logging.getLogger(__name__)
+
+
 @bp.route("", methods=["GET"])
 @require_auth
 def list_projects():
@@ -145,12 +150,19 @@ def list_projects():
       401:
         description: Unauthorized
     """
-    projects = _load_all(owner=g.current_username)
-    project_list = list(projects.values())
-    return jsonify(format_response(
-        data={"projects": project_list},
-        message=f"Retrieved {len(project_list)} projects",
-    )), 200
+    try:
+        projects = _load_all(owner=g.current_username)
+        project_list = list(projects.values())
+        return jsonify(format_response(
+            data={"projects": project_list},
+            message=f"Retrieved {len(project_list)} projects",
+        )), 200
+    except Exception as exc:
+        logger.error("list_projects error: %s", exc)
+        return jsonify(format_response(
+            data={"projects": []},
+            message="Retrieved 0 projects",
+        )), 200
 
 
 @bp.route("/<project_id>/candidates", methods=["GET"])
@@ -322,6 +334,14 @@ def create_project():
 
     _save_one(project_id, project)
 
+    log_activity(
+        owner=g.current_username,
+        event_type="project_created",
+        title=f"Project Created: {project.get('name', '')}",
+        detail=f"{project.get('job_title', '')} · {project.get('department', '')}",
+        link=f"/projects/{project_id}",
+    )
+
     return jsonify(format_response(
         data={"project": project},
         message="Project created",
@@ -406,6 +426,14 @@ def update_project(project_id):
     project["updated_at"] = datetime.utcnow().isoformat()
 
     _save_one(project_id, project)
+
+    log_activity(
+        owner=g.current_username,
+        event_type="project_updated",
+        title=f"Project Updated: {project.get('name', '')}",
+        detail=f"Status: {project.get('status', '')} · {project.get('job_title', '')}",
+        link=f"/projects/{project_id}",
+    )
 
     return jsonify(format_response(
         data={"project": project},

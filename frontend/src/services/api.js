@@ -91,11 +91,25 @@ export const loginUser = (payload) => api.post('/auth/login', payload);
 export const logoutUser = (token) => api.post('/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } });
 export const getProfile = (token) => api.get('/auth/profile', { headers: { Authorization: `Bearer ${token}` } });
 export const updateProfile = (token, payload) => api.put('/auth/profile', payload, { headers: { Authorization: `Bearer ${token}` } });
+// Simplified versions that use the interceptor-injected token (preferred for in-app use)
+export const fetchMyProfile = () => api.get('/auth/profile');
+export const saveMyProfile = (payload) => api.put('/auth/profile', payload);
 export const getGoogleAuthUrl = () => `${API_URL}/auth/google`;
 
 // Dashboard endpoints
 export const getDashboardMetrics = (projectId = '') =>
   api.get('/dashboard/metrics', { params: projectId ? { project_id: projectId } : {} });
+
+// Analytics endpoints
+export const getAnalytics = (params = {}) => api.get('/analytics', { params });
+
+// Activity / history endpoints
+export const getActivity = (params = {}) => api.get('/activity', { params });
+export const exportAnalyticsCsv = (projectId = '') =>
+  api.get('/analytics/export', {
+    params: projectId ? { project_id: projectId } : {},
+    responseType: 'blob',
+  });
 
 // Project endpoints
 export const getProjects = () => api.get('/projects');

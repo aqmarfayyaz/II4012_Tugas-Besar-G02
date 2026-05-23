@@ -126,12 +126,16 @@ const Ranking = () => {
     }
   }, [location.state, currentProject?.id]);
 
-  // Fallback to static data
+  // Real data takes full priority; static fallback only when no real data at all
   const displayTop = rankedCandidates.length > 0 ? rankedCandidates : FALLBACK_TOP;
-  const displayRemaining = remainingCandidates.length > 0 ? remainingCandidates : [
-    { rank: 4, name: 'David Chen',      experience: '5 Yrs · Mobile First', score: 88 },
-    { rank: 5, name: 'Sofia Rodriguez', experience: '7 Yrs · SaaS Expert',  score: 85 },
-  ];
+  const displayRemaining = remainingCandidates.length > 0
+    ? remainingCandidates
+    : isRealData
+      ? []   // real run with < 4 candidates — no fake rows
+      : [
+          { rank: 4, name: 'David Chen',      experience: '5 Yrs · Mobile First', score: 88 },
+          { rank: 5, name: 'Sofia Rodriguez', experience: '7 Yrs · SaaS Expert',  score: 85 },
+        ];
 
   const handleShortlist = (candidate) => {
     if (shortlist.find((s) => s.name === candidate.name)) return;

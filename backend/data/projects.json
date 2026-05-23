@@ -1,24 +1,4 @@
 {
-  "b41ba009-8284-4698-9d19-fc731f483e27": {
-    "id": "b41ba009-8284-4698-9d19-fc731f483e27",
-    "name": "aa",
-    "job_title": "a",
-    "department": "a",
-    "job_description": "a",
-    "required_skills": [
-      "a"
-    ],
-    "employment_type": "full-time",
-    "start_date": "2026-02-02",
-    "end_date": "2025-01-01",
-    "hiring_quota": 2,
-    "hiring_manager": "a",
-    "priority": "medium",
-    "notes": "",
-    "status": "draft",
-    "created_at": "2026-05-22T07:22:05.145558",
-    "updated_at": "2026-05-22T07:22:05.145558"
-  },
   "d971b188-a669-461a-a0ea-8cd744d0d3fa": {
     "id": "d971b188-a669-461a-a0ea-8cd744d0d3fa",
     "name": "data analyst intern",
@@ -83,5 +63,30 @@
     "created_by": "inggried@gmail.com",
     "created_at": "2026-05-22T13:46:36.814577",
     "updated_at": "2026-05-22T13:46:36.814577"
+  },
+  "32254795-ed83-4710-96b5-0dde676a9693": {
+    "id": "32254795-ed83-4710-96b5-0dde676a9693",
+    "name": "Project Manager",
+    "job_title": "Intern",
+    "department": "IT",
+    "job_description": "Currently pursuing or recently completed a degree in Information Systems, Informatics, Computer Science, Statistics, Mathematics, or related fields.\nStrong analytical thinking and problem-solving skills with attention to detail.\nExperienced in SQL and database modeling concepts, including designing relational databases and writing optimized queries.\nFamiliar with data processing and reporting using Excel or Google Sheets, including advanced formulas, filtering, and data integration functions such as IMPORTRANGE.\nAble to analyze and interpret datasets to generate meaningful insights and support decision-making processes.\nCapable of working with structured and unstructured data while maintaining data accuracy and integrity.\nStrong communication and collaboration skills, with experience coordinating between technical and non-technical stakeholders.\nAble to manage multiple tasks, work independently, and meet deadlines in a fast-paced environment.\nExperience in project coordination, leadership, mentoring, or academic assistance is a plus.\nPassionate about data analytics, business intelligence, and continuous learning in technology-driven environments.",
+    "required_skills": [
+      "Analytical thinking",
+      "SQL",
+      "database modeling",
+      "decision-making"
+    ],
+    "employment_type": "full-time",
+    "start_date": "2026-05-24",
+    "end_date": "2026-05-31",
+    "hiring_quota": 3,
+    "hiring_manager": "HR",
+    "priority": "medium",
+    "notes": "",
+    "status": "draft",
+    "created_by": "veliciagbrl@gmail.com",
+    "created_at": "2026-05-23T10:46:25.537257",
+    "updated_at": "2026-05-23T10:46:25.537257"
   }
 }
+

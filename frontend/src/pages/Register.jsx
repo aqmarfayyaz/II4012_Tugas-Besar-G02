@@ -87,6 +87,12 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Back to landing */}
+            <Link to="/landing" className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary mb-6 transition-colors">
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              Back to home
+            </Link>
+
             {/* Header */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-primary mb-2">Create Account</h2>

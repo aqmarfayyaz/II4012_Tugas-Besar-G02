@@ -7,7 +7,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flasgger import Swagger
 from config import Config
-from routes import upload, screening, candidates, auth, projects, dashboard
+from routes import upload, screening, candidates, auth, projects, dashboard, analytics, activity
 
 logging.basicConfig(level=logging.INFO)
 
@@ -99,6 +99,8 @@ def create_app(config_class=Config):
     app.register_blueprint(auth.bp)
     app.register_blueprint(projects.bp)
     app.register_blueprint(dashboard.bp)
+    app.register_blueprint(analytics.bp)
+    app.register_blueprint(activity.bp)
 
     # Initialize OAuth clients
     _logger = logging.getLogger(__name__)

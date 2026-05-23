@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { projects, currentProject, selectProject, logout } = useAuth();
+  const { user, projects, currentProject, selectProject, logout } = useAuth();
 
   const navItems = [
     { icon: 'dashboard', label: 'Dashboard', path: '/' },
@@ -78,7 +78,32 @@ const Sidebar = () => {
       </nav>
 
       <div className="pt-6 border-t border-slate-100 space-y-1">
-        <button onClick={() => navigate('/landing')} className="w-full flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-slate-700 transition-colors font-sans text-sm font-medium">
+        {/* User row */}
+        <button
+          onClick={() => navigate('/settings')}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors mb-2"
+        >
+          <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full bg-primary flex items-center justify-center text-white text-xs font-semibold">
+                {(user?.name || user?.email || user?.username || 'U')[0].toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-semibold text-slate-800 truncate">
+              {user?.name || user?.email || 'Account'}
+            </p>
+            {user?.name && (
+              <p className="text-[11px] text-slate-400 truncate">{user.email || user.username}</p>
+            )}
+          </div>
+          <span className="material-symbols-outlined text-slate-400 text-sm">chevron_right</span>
+        </button>
+
+        <button onClick={() => navigate('/support')} className="w-full flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-slate-700 transition-colors font-sans text-sm font-medium">
           <span className="material-symbols-outlined">help</span>
           Support
         </button>

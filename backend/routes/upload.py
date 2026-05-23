@@ -15,6 +15,7 @@ from services.job_classifier import JobFamilyClassifier
 from services.cv_parser import CVParser
 from services import firebase_db
 from routes.auth import require_auth
+from services.activity_log import log_activity
 from config import Config
 
 bp = Blueprint("upload", __name__, url_prefix="/api/upload")
@@ -161,6 +162,14 @@ def upload_cv():
             project_id=project_id,
             candidate_id=candidate_id,
             data=response_data,
+        )
+
+        log_activity(
+            owner=g.current_username,
+            event_type="cv_upload",
+            title=f"CV Uploaded: {response_data.get('candidate_name') or 'Unknown'}",
+            detail=f"Predicted role: {response_data.get('predicted_label', '')}",
+            link=f"/candidate/{candidate_id}",
         )
 
         return jsonify(

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
@@ -16,6 +17,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import History from './pages/History';
 import Notifications from './pages/Notifications';
+import Support from './pages/Support';
 import './App.css';
 
 // Protected Route Component
@@ -28,11 +30,25 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  return user ? children : <Navigate to="/landing" replace />;
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+// Route that also requires an active project — waits for projects to finish loading before redirecting
+const ProjectRoute = ({ children }) => {
+  const { user, authLoading, currentProject, projectsLoading } = useAuth();
+  if (authLoading || projectsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-on-surface-variant">
+        Loading...
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  return currentProject ? children : <Navigate to="/projects" replace />;
 };
 
 function AppRoutes() {
-  const { user, currentProject } = useAuth();
+  const { user } = useAuth();
 
   return (
     <Routes>
@@ -68,43 +84,23 @@ function AppRoutes() {
       />
       <Route
         path="/upload"
-        element={
-          <ProtectedRoute>
-            {currentProject ? <Upload /> : <Navigate to="/projects" replace />}
-          </ProtectedRoute>
-        }
+        element={<ProjectRoute><Upload /></ProjectRoute>}
       />
       <Route
         path="/candidates"
-        element={
-          <ProtectedRoute>
-            {currentProject ? <Candidates /> : <Navigate to="/projects" replace />}
-          </ProtectedRoute>
-        }
+        element={<ProjectRoute><Candidates /></ProjectRoute>}
       />
       <Route
         path="/candidate/:id"
-        element={
-          <ProtectedRoute>
-            {currentProject ? <CandidateDetail /> : <Navigate to="/projects" replace />}
-          </ProtectedRoute>
-        }
+        element={<ProjectRoute><CandidateDetail /></ProjectRoute>}
       />
       <Route
         path="/ranking"
-        element={
-          <ProtectedRoute>
-            {currentProject ? <Ranking /> : <Navigate to="/projects" replace />}
-          </ProtectedRoute>
-        }
+        element={<ProjectRoute><Ranking /></ProjectRoute>}
       />
       <Route
         path="/analytics"
-        element={
-          <ProtectedRoute>
-            {currentProject ? <Analytics /> : <Navigate to="/projects" replace />}
-          </ProtectedRoute>
-        }
+        element={<ProjectRoute><Analytics /></ProjectRoute>}
       />
       <Route
         path="/profile"
@@ -135,6 +131,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/support"
+        element={
+          <ProtectedRoute>
+            <Support />
           </ProtectedRoute>
         }
       />

@@ -16,6 +16,7 @@ from routes.auth import require_auth
 from config import Config
 
 from utils.helpers import format_response
+from services.activity_log import log_activity
 
 bp = Blueprint("screening", __name__, url_prefix="/api/screening")
 logger = logging.getLogger(__name__)
@@ -392,6 +393,15 @@ def save_results():
                     "screening_result_id": result_id,
                 },
             )
+        n = len(data.get("ranked_candidates", []))
+        log_activity(
+            owner=g.current_username,
+            event_type="screening_complete",
+            title="AI Screening Completed",
+            detail=f"{n} candidate{'s' if n != 1 else ''} ranked · {data.get('job_category', '')}",
+            link=f"/ranking",
+        )
+
         return jsonify(format_response(
             data={"result_id": result_id, "saved_to_firestore": saved},
             message="Screening result saved",
