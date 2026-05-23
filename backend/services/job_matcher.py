@@ -1,18 +1,9 @@
-"""
-Job Matcher Service
-Ranks candidates against a job description using semantic similarity,
-skill analysis, and category compatibility.
-"""
 
 import logging
 from typing import List, Dict, Any
 
 logger = logging.getLogger(__name__)
 
-# ── Category compatibility mapping ────────────────────────────────────────
-# Maps JobFamilyClassifier labels (TECH, BUSINESS, etc.) to the keywords used
-# by DepartmentClassifier (engineering, sales, etc.).  These two classifiers
-# use different label vocabularies; this bridge prevents false zero-scores.
 _FAMILY_TO_DEPT_KEYWORDS: Dict[str, List[str]] = {
     "TECH": ["engineering", "software", "technical", "it", "data", "technology", "developer", "devops"],
     "BUSINESS": ["business", "finance", "hr", "operations", "sales", "management", "product", "strategy"],
@@ -20,21 +11,17 @@ _FAMILY_TO_DEPT_KEYWORDS: Dict[str, List[str]] = {
     "SERVICES": ["services", "support", "customer", "success", "operations", "service"],
 }
 
-
 class JobMatcher:
 
     def __init__(self, classifier=None, similarity_scorer=None):
         self.classifier = classifier
         self.similarity_scorer = similarity_scorer
 
-    # ── Public API ─────────────────────────────────────────────────────────
-
     def rank_candidates(
         self,
         candidates: List[Dict[str, Any]],
         jd_data: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
-        """Rank candidates against a job description. Returns sorted list."""
         ranked = []
 
         for candidate in candidates:
@@ -43,7 +30,6 @@ class JobMatcher:
                 skill_score, skill_details = self._calculate_skill_score(candidate, jd_data)
                 category_match = self._check_category_match(candidate, jd_data)
 
-                # Weighted formula (max = 50 + 35 + 15 = 100)
                 combined_score = (
                     similarity_score * 0.50
                     + skill_score   * 0.35
@@ -86,14 +72,11 @@ class JobMatcher:
                 logger.error("Error ranking candidate %s: %s", candidate.get("name", "?"), exc)
                 continue
 
-        # Sort descending and assign rank numbers
         ranked.sort(key=lambda x: x["overall_score"], reverse=True)
         for idx, c in enumerate(ranked, start=1):
             c["rank"] = idx
 
         return ranked
-
-    # ── Private helpers ────────────────────────────────────────────────────
 
     def _calculate_similarity_score(self, candidate: Dict, jd_data: Dict) -> float:
         if not self.similarity_scorer:
@@ -119,35 +102,22 @@ class JobMatcher:
             return 0.0, {}
 
     def _check_category_match(self, candidate: Dict, jd_data: Dict) -> float:
-        """
-        Check how compatible the candidate's job family is with the JD category.
-        Returns 1.0 (good match), 0.5 (uncertain / missing), or 0.0 (clear mismatch).
-
-        Handles the label mismatch between:
-          - JobFamilyClassifier: TECH, BUSINESS, CREATIVE, SERVICES
-          - DepartmentClassifier: Engineering, Design, Sales, etc.
-        """
         candidate_cat = str(candidate.get("predicted_category") or "").strip().upper()
         jd_cat = str(jd_data.get("job_category") or "").strip().lower()
 
-        # If either is unknown, return neutral
         if not candidate_cat or not jd_cat:
             return 0.5
 
-        # Direct (case-insensitive) match
         if candidate_cat.lower() == jd_cat:
             return 1.0
 
-        # Bridge: check if jd_cat overlaps with the known keywords for this family
         keywords = _FAMILY_TO_DEPT_KEYWORDS.get(candidate_cat, [])
         if any(kw in jd_cat for kw in keywords):
             return 1.0
 
-        # Reverse check: if the family label appears in jd_cat
         if candidate_cat.lower() in jd_cat:
             return 1.0
 
-        # Partial overlap — give a small benefit rather than 0
         return 0.2
 
     def generate_insight(self, candidate: Dict, jd_data: Dict, scores: Dict) -> str:

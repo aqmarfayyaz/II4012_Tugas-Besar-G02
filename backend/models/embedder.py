@@ -1,7 +1,3 @@
-"""
-Embedder Service
-Generates embeddings for CV and JD texts using OpenAI
-"""
 
 import logging
 import os
@@ -15,14 +11,11 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-
-
 def _get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
         return None
     return OpenAI(api_key=api_key)
-
 
 class TextEmbedder:
 
@@ -30,12 +23,6 @@ class TextEmbedder:
         self,
         model_name: str = "text-embedding-3-small"
     ):
-        """
-        Initialize OpenAI embedding model
-
-        Args:
-            model_name: OpenAI embedding model
-        """
 
         self.model_name = model_name
         self.client = _get_openai_client()
@@ -53,15 +40,6 @@ class TextEmbedder:
         self,
         text: str
     ) -> np.ndarray:
-        """
-        Embed single text using OpenAI
-
-        Args:
-            text: Text to embed
-
-        Returns:
-            Embedding vector
-        """
 
         try:
 
@@ -93,15 +71,6 @@ class TextEmbedder:
         self,
         texts: List[str]
     ) -> np.ndarray:
-        """
-        Embed multiple texts
-
-        Args:
-            texts: List of texts
-
-        Returns:
-            2D embedding array
-        """
 
         try:
 
@@ -132,7 +101,6 @@ class TextEmbedder:
 
     @staticmethod
     def _join_field(value) -> str:
-        """Coerce list-or-string field to a single string."""
         if isinstance(value, list):
             return ' '.join(str(item) for item in value if item)
         return str(value) if value else ''
@@ -141,11 +109,6 @@ class TextEmbedder:
         self,
         cv_data: dict
     ) -> np.ndarray:
-        """
-        Embed CV data.
-        Handles both raw keys (experience, education) and
-        structured keys (experience_text, education_text, full_text).
-        """
         experience = (
             cv_data.get('experience_text') or
             cv_data.get('experience', '')
@@ -171,9 +134,6 @@ class TextEmbedder:
         self,
         jd_data: dict
     ) -> np.ndarray:
-        """
-        Embed Job Description data
-        """
 
         combined_text = f"""
         Job Title:

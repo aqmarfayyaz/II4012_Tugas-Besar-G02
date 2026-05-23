@@ -1,13 +1,3 @@
-"""
-Firebase Firestore storage service.
-Reads FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_SERVICE_ACCOUNT_JSON from .env.
-Falls back silently to local JSON storage when credentials are not configured.
-
-Firestore collections:
-  projects/{project_id}          — owned by a user (created_by field)
-  candidates/{candidate_id}      — owner + project_id fields
-  screening_results/{result_id}  — owner + project_id fields
-"""
 
 import json
 import logging
@@ -24,10 +14,8 @@ DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")
 CANDIDATES_FILE = os.path.join(DATA_DIR, "candidates.json")
 SCREENING_RESULTS_FILE = os.path.join(DATA_DIR, "screening_results.json")
 
-
 def _ensure_data_dir() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
-
 
 def _json_load(path: str) -> Dict[str, Any]:
     _ensure_data_dir()
@@ -36,12 +24,10 @@ def _json_load(path: str) -> Dict[str, Any]:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 def _json_save(path: str, payload: Dict[str, Any]) -> None:
     _ensure_data_dir()
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
-
 
 def _init() -> None:
     global _db, _initialized, _available
@@ -89,16 +75,11 @@ def _init() -> None:
         _db = None
         _available = False
 
-
 def is_available() -> bool:
     _init()
     return _available
 
-
-# ─── Helper ───────────────────────────────────────────────────────────────
-
 def _stream(collection, filters: list) -> Optional[List[Dict]]:
-    """Stream a Firestore collection with equality filters.  Returns None on error."""
     try:
         ref = _db.collection(collection)
         for field, value in filters:
@@ -107,9 +88,6 @@ def _stream(collection, filters: list) -> Optional[List[Dict]]:
     except Exception as exc:
         logger.error(f"Firestore _stream({collection}): {exc}")
         return None
-
-
-# ─── Projects ─────────────────────────────────────────────────────────────
 
 def list_projects(owner: str = None) -> Optional[List[Dict]]:
     _init()
@@ -125,7 +103,6 @@ def list_projects(owner: str = None) -> Optional[List[Dict]]:
         logger.error(f"Firestore list_projects: {exc}")
         return None
 
-
 def get_project(project_id: str) -> Optional[Dict]:
     _init()
     if not _available:
@@ -139,7 +116,6 @@ def get_project(project_id: str) -> Optional[Dict]:
         logger.error(f"Firestore get_project: {exc}")
         return None
 
-
 def save_project(project_id: str, data: Dict) -> bool:
     _init()
     if not _available:
@@ -151,7 +127,6 @@ def save_project(project_id: str, data: Dict) -> bool:
         logger.error(f"Firestore save_project: {exc}")
         return False
 
-
 def delete_project(project_id: str) -> bool:
     _init()
     if not _available:
@@ -162,9 +137,6 @@ def delete_project(project_id: str) -> bool:
     except Exception as exc:
         logger.error(f"Firestore delete_project: {exc}")
         return False
-
-
-# ─── Candidates ───────────────────────────────────────────────────────────
 
 def save_candidate(owner: str, project_id: str, candidate_id: str, data: Dict) -> bool:
     _init()
@@ -182,7 +154,6 @@ def save_candidate(owner: str, project_id: str, candidate_id: str, data: Dict) -
     payload[candidate_id] = data
     _json_save(CANDIDATES_FILE, payload)
     return True
-
 
 def list_candidates(owner: str, project_id: str = None) -> Optional[List[Dict]]:
     _init()
@@ -202,7 +173,6 @@ def list_candidates(owner: str, project_id: str = None) -> Optional[List[Dict]]:
         results = [c for c in results if c.get("project_id") == project_id]
     return results
 
-
 def get_candidate(candidate_id: str) -> Optional[Dict]:
     _init()
     if _available:
@@ -220,7 +190,6 @@ def get_candidate(candidate_id: str) -> Optional[Dict]:
     if candidate is None:
         return {}
     return {"id": candidate_id, **candidate}
-
 
 def update_candidate(candidate_id: str, updates: Dict[str, Any]) -> bool:
     _init()
@@ -240,7 +209,6 @@ def update_candidate(candidate_id: str, updates: Dict[str, Any]) -> bool:
     _json_save(CANDIDATES_FILE, data)
     return True
 
-
 def delete_candidate(candidate_id: str) -> bool:
     _init()
     if _available:
@@ -256,9 +224,6 @@ def delete_candidate(candidate_id: str) -> bool:
         data.pop(candidate_id, None)
         _json_save(CANDIDATES_FILE, data)
     return True
-
-
-# ─── Screening Results ────────────────────────────────────────────────────
 
 def save_screening_result(owner: str, project_id: str, result_id: str, data: Dict) -> bool:
     _init()
@@ -276,7 +241,6 @@ def save_screening_result(owner: str, project_id: str, result_id: str, data: Dic
     payload[result_id] = data
     _json_save(SCREENING_RESULTS_FILE, payload)
     return True
-
 
 def list_screening_results(owner: str, project_id: str = None) -> Optional[List[Dict]]:
     _init()
@@ -306,7 +270,6 @@ def list_screening_results(owner: str, project_id: str = None) -> Optional[List[
     if project_id:
         results = [r for r in results if r.get("project_id") == project_id]
     return sorted(results, key=lambda x: x.get("created_at", ""), reverse=True)
-
 
 def get_screening_result(result_id: str) -> Optional[Dict]:
     _init()

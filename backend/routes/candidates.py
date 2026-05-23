@@ -1,6 +1,3 @@
-"""
-Candidate management routes — data stored per-user in Firestore (JSON fallback).
-"""
 
 from flask import Blueprint, request, jsonify, g, send_file
 import json
@@ -19,13 +16,11 @@ PROJECTS_FILE = os.path.join(DATA_DIR, "projects.json")
 
 ALLOWED_STATUS = {"applied", "review", "shortlisted", "interviewed", "rejected"}
 
-
 def _load_projects_json() -> dict:
   if not os.path.exists(PROJECTS_FILE):
     return {}
   with open(PROJECTS_FILE, "r", encoding="utf-8") as f:
     return json.load(f)
-
 
 def _get_project(project_id: str) -> dict:
   if not project_id:
@@ -36,7 +31,6 @@ def _get_project(project_id: str) -> dict:
       return result or {}
   return _load_projects_json().get(project_id, {})
 
-
 def _recommendation_for_score(score: float) -> str:
   if score >= 80:
     return "Highly Recommended"
@@ -45,7 +39,6 @@ def _recommendation_for_score(score: float) -> str:
   if score >= 40:
     return "Moderate Match"
   return "Low Match"
-
 
 def _latest_score_map(owner: str, project_id: str) -> dict:
   if not project_id:
@@ -71,13 +64,11 @@ def _latest_score_map(owner: str, project_id: str) -> dict:
     }
   return score_map
 
-
 def _normalize_status(value: str) -> str:
   if not value:
     return "applied"
   value = value.lower().strip()
   return value if value in ALLOWED_STATUS else "applied"
-
 
 def _candidate_view(candidate: dict, project: dict, score_map: dict) -> dict:
   candidate_id = candidate.get("id") or candidate.get("candidate_id")
@@ -112,50 +103,9 @@ def _candidate_view(candidate: dict, project: dict, score_map: dict) -> dict:
     "cv_download_url": f"/api/candidates/{candidate_id}/cv" if candidate.get("cv_file_path") else "",
   }
 
-
 @bp.route("", methods=["GET"])
 @require_auth
 def get_candidates():
-    """
-    Get all candidates for current user
-    ---
-    tags:
-      - Candidates
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: query
-        name: project_id
-        type: string
-        required: false
-      - in: query
-        name: search
-        type: string
-        required: false
-      - in: query
-        name: status
-        type: string
-        required: false
-      - in: query
-        name: min_score
-        type: number
-        required: false
-      - in: query
-        name: max_score
-        type: number
-        required: false
-      - in: query
-        name: page
-        type: integer
-        required: false
-      - in: query
-        name: page_size
-        type: integer
-        required: false
-    responses:
-      200:
-        description: Candidate list
-    """
     try:
         project_id = request.args.get("project_id", "")
         search = request.args.get("search", "").strip().lower()
@@ -222,35 +172,16 @@ def get_candidates():
         logger.error(f"get_candidates: {exc}")
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("/<candidate_id>", methods=["GET"])
 @require_auth
 def get_candidate(candidate_id):
-    """
-    Get candidate details
-    ---
-    tags:
-      - Candidates
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: candidate_id
-        type: string
-        required: true
-    responses:
-      200:
-        description: Candidate details
-      404:
-        description: Not found
-    """
     try:
         candidate = firebase_db.get_candidate(candidate_id)
         if not candidate:
             return jsonify(format_response(
                 message="Candidate not found", status="error", code=404
             )), 404
-        # Enforce ownership
+
         if candidate.get("owner") and candidate["owner"] != g.current_username:
             return jsonify(format_response(
                 message="Not found", status="error", code=404
@@ -263,41 +194,9 @@ def get_candidate(candidate_id):
         logger.error(f"get_candidate: {exc}")
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("/<candidate_id>/status", methods=["PATCH"])
 @require_auth
 def update_candidate_status(candidate_id):
-    """
-    Update candidate status
-    ---
-    tags:
-      - Candidates
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: candidate_id
-        type: string
-        required: true
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - status
-          properties:
-            status:
-              type: string
-              enum: [applied, review, shortlisted, interviewed, rejected]
-    responses:
-      200:
-        description: Status updated
-      400:
-        description: Validation error
-      404:
-        description: Not found
-    """
     try:
         candidate = firebase_db.get_candidate(candidate_id)
         if not candidate:
@@ -332,28 +231,9 @@ def update_candidate_status(candidate_id):
         logger.error(f"update_candidate_status: {exc}")
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("/<candidate_id>/cv", methods=["GET"])
 @require_auth
 def download_candidate_cv(candidate_id):
-    """
-    Download candidate CV file
-    ---
-    tags:
-      - Candidates
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: candidate_id
-        type: string
-        required: true
-    responses:
-      200:
-        description: CV file
-      404:
-        description: Not found
-    """
     try:
         candidate = firebase_db.get_candidate(candidate_id)
         if not candidate:
@@ -376,25 +256,9 @@ def download_candidate_cv(candidate_id):
         logger.error(f"download_candidate_cv: {exc}")
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("", methods=["POST"])
 @require_auth
 def create_candidate():
-    """
-    Manually create a candidate record
-    ---
-    tags:
-      - Candidates
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: body
-        name: body
-        required: true
-    responses:
-      201:
-        description: Candidate created
-    """
     try:
         data = request.get_json() or {}
         candidate_id = data.get("candidate_id")
@@ -424,28 +288,9 @@ def create_candidate():
         logger.error(f"create_candidate: {exc}")
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("/<candidate_id>", methods=["DELETE"])
 @require_auth
 def delete_candidate(candidate_id):
-    """
-    Delete candidate
-    ---
-    tags:
-      - Candidates
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: candidate_id
-        type: string
-        required: true
-    responses:
-      200:
-        description: Deleted
-      404:
-        description: Not found
-    """
     try:
         candidate = firebase_db.get_candidate(candidate_id)
         if not candidate:

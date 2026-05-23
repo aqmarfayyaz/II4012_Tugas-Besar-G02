@@ -30,10 +30,10 @@ const Profile = () => {
   return (
     <Layout title="Profile">
       <div className="max-w-6xl mx-auto px-8 py-8 space-y-8">
-        {/* Profile Header Card */}
+
         <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
           <div className="flex items-start gap-8">
-            {/* Profile Photo */}
+
             <div className="relative flex-shrink-0">
               <div className="w-32 h-32 bg-gradient-to-br from-slate-400 to-slate-600 rounded-xl flex items-center justify-center text-white text-4xl font-bold">
                 DH
@@ -43,7 +43,6 @@ const Profile = () => {
               </button>
             </div>
 
-            {/* Profile Info */}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-slate-900">{formData.firstName} {formData.lastName}</h1>
@@ -51,7 +50,7 @@ const Profile = () => {
               </div>
               <p className="text-base font-medium text-primary mb-1">{formData.jobTitle}</p>
               <p className="text-sm text-slate-600 mb-4">{formData.bio}</p>
-              
+
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-3 text-slate-600">
                   <span className="material-symbols-outlined text-base">domain</span>
@@ -70,11 +69,10 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-3 gap-8">
-          {/* Left Column - Personal Information */}
+
           <div className="col-span-2">
-            {/* Personal Information Section */}
+
             <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
               <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-200">
                 <h2 className="text-xl font-bold text-slate-900">Personal Information</h2>
@@ -85,7 +83,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-6">
-                {/* Name Row */}
+
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-label-sm font-semibold text-slate-700 mb-2">First Name</label>
@@ -109,7 +107,6 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Job Title and Department Row */}
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-label-sm font-semibold text-slate-700 mb-2">Job Title</label>
@@ -136,7 +133,6 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Professional Bio */}
                 <div>
                   <label className="block text-label-sm font-semibold text-slate-700 mb-2">Professional Bio</label>
                   <textarea
@@ -150,12 +146,11 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Security & Authentication Section */}
             <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm mt-8">
               <h2 className="text-xl font-bold text-slate-900 mb-6 pb-6 border-b border-slate-200">Security & Authentication</h2>
 
               <div className="space-y-4">
-                {/* Two-Factor Authentication */}
+
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
@@ -169,7 +164,6 @@ const Profile = () => {
                   <button className="px-4 py-2 text-primary font-semibold text-sm hover:underline">Manage</button>
                 </div>
 
-                {/* Password Policy */}
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
@@ -186,12 +180,11 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Right Column - Activity & Sessions */}
           <div className="col-span-1">
-            {/* Recent Activity */}
+
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-24">
               <h3 className="text-lg font-bold text-slate-900 mb-4 pb-4 border-b border-slate-200">Recent Activity</h3>
-              
+
               <div className="space-y-4">
                 <div className="text-sm">
                   <p className="font-semibold text-slate-900">Profile Updated</p>

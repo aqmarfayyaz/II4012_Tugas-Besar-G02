@@ -99,14 +99,14 @@ const Upload = () => {
       if (resultData) {
         localStorage.setItem('ranked_candidates', JSON.stringify(resultData));
         setScreeningResult(resultData);
-        // Auto-save to Firestore
+
         try {
           await saveScreeningResults({
             project_id: currentProject?.id || '',
             ...resultData,
             jd_data: jdData,
           });
-        } catch (_) { /* non-critical */ }
+        } catch (_) {  }
       }
       setUploadProgress(100);
       setProcessingStage(4);
@@ -154,7 +154,7 @@ const Upload = () => {
   return (
     <Layout title="Upload">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
-        {/* Header */}
+
         <div>
           <h1 className="text-h1 font-h1 text-primary">Upload CV & Screening Data</h1>
           <p className="text-body-md text-secondary mt-1">Upload candidate files for automated AI extraction and score mapping</p>
@@ -168,11 +168,10 @@ const Upload = () => {
           </div>
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
+
           <div className="lg:col-span-2 space-y-6">
-            {/* CV Upload Card */}
+
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
               <h3 className="text-body-md font-semibold text-primary mb-4">Upload CV Files</h3>
               <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer relative">
@@ -203,7 +202,6 @@ const Upload = () => {
                 </div>
               )}
 
-              {/* Parsed CV preview */}
               {uploadedCandidates.length > 0 && (
                 <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">
                   <p className="text-label-sm font-bold text-slate-700 uppercase tracking-wider">Parsed Results</p>
@@ -240,7 +238,6 @@ const Upload = () => {
               </div>
             </div>
 
-            {/* JD Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
               <h3 className="text-body-md font-semibold text-primary mb-4">Job Description Requirement</h3>
               <textarea
@@ -265,7 +262,6 @@ const Upload = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={handleReset}
@@ -295,10 +291,9 @@ const Upload = () => {
               </div>
             )}
 
-            {/* ── SCREENING RESULTS PANEL ── */}
             {screeningResult && (
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                {/* Header */}
+
                 <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
                   <div>
                     <h3 className="font-bold text-base">AI Screening Results</h3>
@@ -315,14 +310,13 @@ const Upload = () => {
                   </button>
                 </div>
 
-                {/* Ranked Cards */}
                 <div className="divide-y divide-slate-100">
                   {(screeningResult.ranked_candidates || []).map((candidate, idx) => {
                     const score = Math.round(candidate.overall_score || 0);
                     return (
                       <div key={idx} className="p-5">
                         <div className="flex items-start justify-between gap-4">
-                          {/* Rank + Name */}
+
                           <div className="flex items-start gap-3 flex-1 min-w-0">
                             <div className="flex-shrink-0 w-9 h-9 bg-slate-900 rounded-full flex items-center justify-center text-white text-sm font-bold">
                               #{candidate.rank}
@@ -338,14 +332,12 @@ const Upload = () => {
                             </div>
                           </div>
 
-                          {/* Score */}
                           <div className={`flex-shrink-0 text-right px-3 py-2 rounded-lg border ${scoreBg(score)}`}>
                             <p className={`text-2xl font-bold ${scoreColor(score)}`}>{score}%</p>
                             <p className={`text-[10px] font-bold uppercase ${scoreColor(score)}`}>{badgeLabel(score)}</p>
                           </div>
                         </div>
 
-                        {/* Score breakdown */}
                         <div className="mt-3 grid grid-cols-3 gap-3">
                           <div className="bg-slate-50 rounded p-2 text-center">
                             <p className="text-[10px] text-slate-500 uppercase">Overall</p>
@@ -361,7 +353,6 @@ const Upload = () => {
                           </div>
                         </div>
 
-                        {/* Skill details */}
                         {candidate.skill_details && (
                           <div className="mt-3 space-y-1">
                             {candidate.skill_details.matched_skills?.length > 0 && (
@@ -383,7 +374,6 @@ const Upload = () => {
                           </div>
                         )}
 
-                        {/* AI Insight */}
                         {candidate.insight && (
                           <p className="mt-2 text-xs text-slate-600 italic border-l-2 border-slate-300 pl-3">
                             {candidate.insight}
@@ -397,7 +387,6 @@ const Upload = () => {
             )}
           </div>
 
-          {/* Right Column - Screening Status */}
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">

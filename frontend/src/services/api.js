@@ -33,7 +33,6 @@ api.interceptors.response.use(
 
 export const getHealth = () => api.get('/health');
 
-// Upload endpoints
 export const uploadCV = (file, projectId = '') => {
   const formData = new FormData();
   formData.append('file', file);
@@ -61,7 +60,6 @@ export const uploadJDText = (jdData) => {
   return api.post('/upload/jd', jdData);
 };
 
-// Screening endpoints
 export const matchCVJD = (cvData, jdData) => {
   return api.post('/screening/match', { cv_data: cvData, jd_data: jdData });
 };
@@ -76,7 +74,6 @@ export const saveScreeningResults = (data) =>
 export const getScreeningResults = (projectId = '') =>
   api.get('/screening/results', { params: projectId ? { project_id: projectId } : {} });
 
-// Candidate endpoints
 export const getCandidates = (params = {}) => api.get('/candidates', { params });
 export const getProjectCandidates = (projectId, params = {}) =>
   api.get(`/projects/${projectId}/candidates`, { params });
@@ -85,25 +82,21 @@ export const updateCandidateStatus = (id, status) => api.patch(`/candidates/${id
 export const createCandidate = (data) => api.post('/candidates', data);
 export const deleteCandidate = (id) => api.delete(`/candidates/${id}`);
 
-// Auth endpoints
 export const registerUser = (payload) => api.post('/auth/register', payload);
 export const loginUser = (payload) => api.post('/auth/login', payload);
 export const logoutUser = (token) => api.post('/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } });
 export const getProfile = (token) => api.get('/auth/profile', { headers: { Authorization: `Bearer ${token}` } });
 export const updateProfile = (token, payload) => api.put('/auth/profile', payload, { headers: { Authorization: `Bearer ${token}` } });
-// Simplified versions that use the interceptor-injected token (preferred for in-app use)
+
 export const fetchMyProfile = () => api.get('/auth/profile');
 export const saveMyProfile = (payload) => api.put('/auth/profile', payload);
 export const getGoogleAuthUrl = () => `${API_URL}/auth/google`;
 
-// Dashboard endpoints
 export const getDashboardMetrics = (projectId = '') =>
   api.get('/dashboard/metrics', { params: projectId ? { project_id: projectId } : {} });
 
-// Analytics endpoints
 export const getAnalytics = (params = {}) => api.get('/analytics', { params });
 
-// Activity / history endpoints
 export const getActivity = (params = {}) => api.get('/activity', { params });
 export const exportAnalyticsCsv = (projectId = '') =>
   api.get('/analytics/export', {
@@ -111,7 +104,6 @@ export const exportAnalyticsCsv = (projectId = '') =>
     responseType: 'blob',
   });
 
-// Project endpoints
 export const getProjects = () => api.get('/projects');
 export const getProject = (id) => api.get(`/projects/${id}`);
 export const createProject = (payload) => api.post('/projects', payload);

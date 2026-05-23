@@ -1,8 +1,3 @@
-"""
-Dashboard metrics aggregation endpoint.
-Computes KPIs, charts, and latest activity from candidates,
-screening results, and projects for the authenticated user.
-"""
 
 import json
 import logging
@@ -21,11 +16,7 @@ logger = logging.getLogger(__name__)
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _PROJECTS_FILE = os.path.join(_DATA_DIR, "projects.json")
 
-
-# ── Helpers ────────────────────────────────────────────────────────────────
-
 def _load_projects(owner: str) -> list:
-    """Load owner's projects — Firestore first, local JSON fallback."""
     if firebase_db.is_available():
         result = firebase_db.list_projects(owner=owner)
         if result is not None:
@@ -37,9 +28,7 @@ def _load_projects(owner: str) -> list:
     except Exception:
         return []
 
-
 def _ts_from_candidate_id(cid: str) -> datetime:
-    """Parse timestamp from candidate_id format  NAME_EMAIL_YYYYMMDDHHMMSS."""
     try:
         ts_part = str(cid).rsplit("_", 1)[-1]
         if len(ts_part) == 14 and ts_part.isdigit():
@@ -47,7 +36,6 @@ def _ts_from_candidate_id(cid: str) -> datetime:
     except Exception:
         pass
     return datetime.min
-
 
 def _generate_insights(all_scored, candidates, projects, job_categories, avg_score):
     insights = []
@@ -98,36 +86,13 @@ def _generate_insights(all_scored, candidates, projects, job_categories, avg_sco
 
     return insights[:3]
 
-
-# ── Endpoint ───────────────────────────────────────────────────────────────
-
 @bp.route("/metrics", methods=["GET"])
 @require_auth
 def get_metrics():
-    """
-    Get aggregated dashboard metrics for the current user.
-    ---
-    tags:
-      - Dashboard
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: query
-        name: project_id
-        type: string
-        required: false
-        description: Optional — filter to a single project
-    responses:
-      200:
-        description: Aggregated dashboard metrics
-      500:
-        description: Internal error
-    """
     try:
         project_id = request.args.get("project_id") or None
         owner = g.current_username
 
-        # ── Raw data ─────────────────────────────────────────────────────────
         candidates = firebase_db.list_candidates(owner=owner, project_id=project_id) or []
         screening_results = (
             firebase_db.list_screening_results(owner=owner, project_id=project_id) or []
@@ -136,7 +101,6 @@ def get_metrics():
         if project_id:
             projects = [p for p in projects if p.get("id") == project_id]
 
-        # ── Flatten scored candidates from all screening results ──────────────
         all_scored = []
         for result in screening_results:
             for cand in result.get("ranked_candidates", []):
@@ -149,7 +113,6 @@ def get_metrics():
                     "project_id": result.get("project_id") or "",
                 })
 
-        # ── KPIs ─────────────────────────────────────────────────────────────
         total_applicants = len(candidates)
         candidates_screened = len(all_scored)
         shortlisted = sum(1 for c in all_scored if c["score"] >= 80)
@@ -158,7 +121,6 @@ def get_metrics():
             if all_scored else 0
         )
 
-        # ── Job Categories ────────────────────────────────────────────────────
         project_map = {p.get("id"): p for p in projects}
         dept_count: dict = {}
         for cand in candidates:
@@ -177,7 +139,6 @@ def get_metrics():
         sorted_depts = sorted(dept_count.items(), key=lambda x: x[1], reverse=True)[:6]
         job_categories = [{"category": d, "count": c} for d, c in sorted_depts]
 
-        # ── Score Distribution ────────────────────────────────────────────────
         low = sum(1 for c in all_scored if c["score"] < 40)
         medium = sum(1 for c in all_scored if 40 <= c["score"] < 80)
         high = sum(1 for c in all_scored if c["score"] >= 80)
@@ -187,7 +148,6 @@ def get_metrics():
             {"range": "HIGH (80+)", "count": high},
         ]
 
-        # ── Match Quality ─────────────────────────────────────────────────────
         if candidates_screened > 0:
             high_pct = round(high / candidates_screened * 100)
             med_pct = round(medium / candidates_screened * 100)
@@ -201,7 +161,6 @@ def get_metrics():
             "low_match": low_pct,
         }
 
-        # ── Latest Submissions ────────────────────────────────────────────────
         sorted_candidates = sorted(
             candidates,
             key=lambda c: _ts_from_candidate_id(c.get("candidate_id") or c.get("id") or ""),
@@ -246,12 +205,10 @@ def get_metrics():
                 "score": score,
             })
 
-        # ── AI Insights ───────────────────────────────────────────────────────
         ai_insights = _generate_insights(
             all_scored, candidates, projects, job_categories, avg_match_score
         )
 
-        # ── System Engine ─────────────────────────────────────────────────────
         screened_emails = {c["email"] for c in all_scored if c["email"]}
         candidate_emails = {
             str(cand.get("email") or "").strip().lower()

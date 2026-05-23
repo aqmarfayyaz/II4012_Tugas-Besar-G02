@@ -1,8 +1,3 @@
-"""
-Similarity Scoring Service
-Computes semantic similarity between CV and JD using embeddings + skill analysis.
-Falls back to TF-IDF cosine similarity when OpenAI embeddings are unavailable.
-"""
 
 import logging
 import numpy as np
@@ -18,13 +13,10 @@ except ImportError:
     _SKLEARN_AVAILABLE = False
     logger.warning("scikit-learn not available — TF-IDF fallback disabled")
 
-
 class SimilarityScorer:
 
     def __init__(self, embedder=None):
         self.embedder = embedder
-
-    # ── Embedding helpers ──────────────────────────────────────────────────
 
     def compute_embedding(self, text: str) -> np.ndarray:
         if not self.embedder:
@@ -33,7 +25,6 @@ class SimilarityScorer:
 
     @staticmethod
     def _is_zero_vector(v: np.ndarray) -> bool:
-        """Return True when the vector carries no information (e.g. API call failed)."""
         return float(np.linalg.norm(v)) < 1e-9
 
     @staticmethod
@@ -45,12 +36,11 @@ class SimilarityScorer:
         if norm1 == 0 or norm2 == 0:
             return 0.0
         similarity = np.dot(vec1, vec2) / (norm1 * norm2)
-        # Map from [-1, 1] to [0, 1]
+
         return float(max(0.0, min(1.0, (similarity + 1) / 2)))
 
     @staticmethod
     def _tfidf_similarity(text1: str, text2: str) -> float:
-        """TF-IDF cosine similarity fallback (0–100). Used when embeddings are zero."""
         if not _SKLEARN_AVAILABLE:
             return 0.0
         t1 = (text1 or "").strip()
@@ -61,7 +51,7 @@ class SimilarityScorer:
             vec = TfidfVectorizer(ngram_range=(1, 2), stop_words="english", min_df=1)
             mat = vec.fit_transform([t1, t2])
             sim = float(_sk_cosine(mat[0:1], mat[1:2])[0][0])
-            # Boost slightly — raw TF-IDF cosine on short texts tends to be low
+
             return round(min(100.0, sim * 130), 2)
         except Exception as exc:
             logger.warning("TF-IDF fallback error: %s", exc)
@@ -71,28 +61,18 @@ class SimilarityScorer:
         similarity = self.cosine_similarity(cv_embedding, jd_embedding)
         return round(similarity * 100, 2)
 
-    # ── Skill scoring ──────────────────────────────────────────────────────
-
     def score_skill_match(
         self,
         cv_skills: list,
         required_skills: list,
         preferred_skills: list = None,
     ) -> Tuple[float, dict]:
-        """
-        Skill overlap scoring with partial/fuzzy matching.
-
-        Empty required_skills: returns a neutral 50.0 instead of collapsing to 0,
-        so that semantic similarity still drives the final score.
-        """
         preferred_skills = preferred_skills or []
 
-        # If neither required nor preferred skills are defined, return neutral score
         if not required_skills and not preferred_skills:
             logger.debug("No required or preferred skills defined — returning neutral skill score")
             return 50.0, {"note": "no required skills defined in JD"}
 
-        # If only preferred skills, treat them as required for scoring purposes
         if not required_skills:
             required_skills = list(preferred_skills)
             preferred_skills = []
@@ -101,7 +81,6 @@ class SimilarityScorer:
         req_set = {s.lower().strip() for s in required_skills if s and str(s).strip()}
         pref_set = {s.lower().strip() for s in preferred_skills if s and str(s).strip()}
 
-        # ── Required skill matching ───────────────────────────────────────
         exact_req = cv_set & req_set
         partial_req = set()
         for cv_s in cv_set:
@@ -118,7 +97,6 @@ class SimilarityScorer:
             list(cv_set)[:10], list(req_set)[:10], list(exact_req), list(partial_req), req_score,
         )
 
-        # ── Preferred skill matching ──────────────────────────────────────
         exact_pref = cv_set & pref_set
         partial_pref = set()
         for cv_s in cv_set:
@@ -146,20 +124,13 @@ class SimilarityScorer:
 
         return round(combined_score, 2), details
 
-    # ── Full analysis ──────────────────────────────────────────────────────
-
     def full_similarity_analysis(self, cv_data: dict, jd_data: dict) -> dict:
-        """
-        Complete semantic + skill analysis.
-        Automatically falls back to TF-IDF when OpenAI embeddings return zero vectors.
-        """
         logger.info(
             "Starting similarity analysis — candidate=%s, jd=%s",
             cv_data.get("name", "?"),
             jd_data.get("job_title", "?"),
         )
 
-        # ── Semantic score ────────────────────────────────────────────────
         cv_embedding = self.embedder.embed_cv(cv_data)
         jd_embedding = self.embedder.embed_jd(jd_data)
 
@@ -188,7 +159,6 @@ class SimilarityScorer:
 
         logger.info("Semantic score=%.2f (source=%s)", semantic_score, embedding_source)
 
-        # ── Skill score ───────────────────────────────────────────────────
         skill_score, skill_details = self.score_skill_match(
             cv_data.get("skills", []),
             jd_data.get("required_skills", []),
@@ -197,8 +167,6 @@ class SimilarityScorer:
 
         logger.info("Skill score=%.2f | details=%s", skill_score, skill_details)
 
-        # ── Final weighted score ──────────────────────────────────────────
-        # When required_skills are undefined (neutral 50), lean more on semantic
         if skill_details.get("note") == "no required skills defined in JD":
             final_score = semantic_score * 0.85 + skill_score * 0.15
         else:

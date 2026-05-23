@@ -50,8 +50,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-surface-container-low">
       <div className="w-full max-w-6xl flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[600px]">
-        
-        {/* Left Side: Brand Section */}
+
         <section className="hidden md:flex flex-1 relative bg-primary items-center justify-center p-8 overflow-hidden">
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-slate-900 to-transparent"></div>
@@ -77,11 +76,9 @@ const Login = () => {
           </div>
         </section>
 
-        {/* Right Side: Login Form */}
         <section className="flex-1 flex flex-col justify-center px-8 py-12 md:px-16">
           <div className="w-full max-w-sm mx-auto">
-            
-            {/* Mobile Logo */}
+
             <div className="md:hidden flex justify-center mb-8">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-3xl">hub</span>
@@ -89,19 +86,16 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Back to landing */}
             <Link to="/landing" className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary mb-6 transition-colors">
               <span className="material-symbols-outlined text-sm">arrow_back</span>
               Back to home
             </Link>
 
-            {/* Header */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-primary mb-2">Welcome Back</h2>
               <p className="text-sm text-on-surface-variant">Please enter your credentials to access the recruiter dashboard.</p>
             </div>
 
-            {/* Tabs */}
             <nav className="flex border-b border-outline-variant mb-8">
               <button className="px-6 py-3 text-sm font-semibold border-b-2 border-primary text-primary transition-colors">
                 Login
@@ -111,10 +105,8 @@ const Login = () => {
               </Link>
             </nav>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Email Field */}
+
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Corporate Email</label>
                 <div className="relative group">
@@ -129,7 +121,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Password</label>
@@ -154,7 +145,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Remember Device */}
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -166,14 +156,12 @@ const Login = () => {
                 </label>
               </div>
 
-              {/* Error Message */}
               {error && (
                 <div className="p-3 bg-error-container text-on-error-container text-xs rounded-lg">
                   {error}
                 </div>
               )}
 
-              {/* Submit Button */}
               <div className="space-y-4 pt-4">
                 <button
                   type="submit"
@@ -184,7 +172,6 @@ const Login = () => {
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </button>
 
-                {/* Divider */}
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-outline-variant"></div>
@@ -194,7 +181,6 @@ const Login = () => {
                   </div>
                 </div>
 
-                {/* Google Auth */}
                 <button
                   type="button"
                   onClick={handleGoogleAuth}
@@ -211,7 +197,6 @@ const Login = () => {
               </div>
             </form>
 
-            {/* Footer */}
             <footer className="mt-8 text-center">
               <p className="text-xs text-on-surface-variant">
                 By accessing this portal, you agree to our{' '}
@@ -223,7 +208,6 @@ const Login = () => {
         </section>
       </div>
 
-      {/* Support Button */}
       <button className="fixed bottom-8 right-8 bg-white border border-outline-variant text-primary p-3 rounded-full shadow-lg hover:bg-surface-container-low transition-all flex items-center gap-2">
         <span className="material-symbols-outlined">support_agent</span>
         <span className="text-xs font-semibold hidden sm:inline pr-2">Support</span>

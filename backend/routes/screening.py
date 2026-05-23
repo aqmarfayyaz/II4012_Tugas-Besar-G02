@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g
 import logging
 import os
 import uuid
@@ -33,7 +33,6 @@ similarity_scorer = SimilarityScorer(embedder=embedder)
 job_matcher = JobMatcher(similarity_scorer=similarity_scorer)
 cv_parser = CVParser()
 
-
 def _recommendation_for_score(score: float) -> str:
     if score >= 80:
         return "Highly Recommended"
@@ -43,27 +42,8 @@ def _recommendation_for_score(score: float) -> str:
         return "Moderate Match"
     return "Low Match"
 
-
 @bp.route("/parse-cv", methods=["POST"])
 def parse_cv():
-    """
-    Parse uploaded CV using LlamaParse + OpenAI
-    ---
-    tags:
-      - Screening
-    consumes:
-      - multipart/form-data
-    parameters:
-      - in: formData
-        name: file
-        type: file
-        required: true
-    responses:
-      200:
-        description: CV parsed
-      400:
-        description: Invalid request
-    """
     try:
         if "file" not in request.files:
             return jsonify(
@@ -118,27 +98,8 @@ def parse_cv():
             )
         ), 500
 
-
 @bp.route("/match", methods=["POST"])
 def match_cv_jd():
-    """
-    Match single CV against job description
-    ---
-    tags:
-      - Screening
-    description: Uses tfidf_word.pkl, tfidf_char.pkl, and lr_classifier_family.pkl for classification.
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        required: true
-    responses:
-      200:
-        description: Match result
-      400:
-        description: Invalid request
-    """
     try:
         data = request.get_json()
         if not data or "cv_data" not in data or "jd_data" not in data:
@@ -198,27 +159,8 @@ def match_cv_jd():
             )
         ), 500
 
-
 @bp.route("/rank", methods=["POST"])
 def rank_candidates():
-    """
-    Rank multiple candidates against JD
-    ---
-    tags:
-      - Screening
-    description: Uses tfidf_word.pkl, tfidf_char.pkl, and lr_classifier_family.pkl for classification.
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        required: true
-    responses:
-      200:
-        description: Ranking results
-      400:
-        description: Invalid request
-    """
     try:
         data = request.get_json()
         if not data or "candidates" not in data or "jd_data" not in data:
@@ -273,27 +215,8 @@ def rank_candidates():
             )
         ), 500
 
-
 @bp.route("/classify-text", methods=["POST"])
 def classify_text():
-    """
-    Classify CV text using TF-IDF + Logistic Regression
-    ---
-    tags:
-      - Screening
-    description: Uses tfidf_word.pkl, tfidf_char.pkl, and lr_classifier_family.pkl.
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        required: true
-    responses:
-      200:
-        description: Classification result
-      400:
-        description: Invalid request
-    """
     try:
         data = request.get_json() or {}
         text = data.get("text", "")
@@ -324,36 +247,9 @@ def classify_text():
             )
         ), 500
 
-
 @bp.route("/save-results", methods=["POST"])
 @require_auth
 def save_results():
-    """
-    Save screening result to Firestore for current user
-    ---
-    tags:
-      - Screening
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          properties:
-            project_id:
-              type: string
-            ranked_candidates:
-              type: array
-            jd_data:
-              type: object
-            job_category:
-              type: string
-    responses:
-      201:
-        description: Result saved
-    """
     try:
         data = request.get_json() or {}
         project_id = data.get("project_id", "")
@@ -411,26 +307,9 @@ def save_results():
         logger.error(f"save_results error: {exc}")
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("/results", methods=["GET"])
 @require_auth
 def get_results():
-    """
-    Get screening results for current user
-    ---
-    tags:
-      - Screening
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: query
-        name: project_id
-        type: string
-        required: false
-    responses:
-      200:
-        description: Screening results list
-    """
     try:
         project_id = request.args.get("project_id")
         results = firebase_db.list_screening_results(

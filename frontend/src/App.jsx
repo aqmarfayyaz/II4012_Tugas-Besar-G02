@@ -20,7 +20,6 @@ import Notifications from './pages/Notifications';
 import Support from './pages/Support';
 import './App.css';
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, authLoading } = useAuth();
   if (authLoading) {
@@ -33,7 +32,6 @@ const ProtectedRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" replace />;
 };
 
-// Route that also requires an active project — waits for projects to finish loading before redirecting
 const ProjectRoute = ({ children }) => {
   const { user, authLoading, currentProject, projectsLoading } = useAuth();
   if (authLoading || projectsLoading) {
@@ -52,12 +50,11 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Routes */}
+
       <Route path="/landing" element={<Landing />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
 
-      {/* Protected Routes */}
       <Route
         path="/"
         element={

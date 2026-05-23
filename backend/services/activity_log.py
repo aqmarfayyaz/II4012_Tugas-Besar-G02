@@ -1,8 +1,3 @@
-"""
-Lightweight per-user activity log.
-Stores up to MAX_EVENTS_PER_USER events in backend/data/activity.json.
-All writes are fire-and-forget (errors are logged but never propagated to callers).
-"""
 import json
 import logging
 import os
@@ -15,7 +10,6 @@ _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _ACTIVITY_FILE = os.path.join(_DATA_DIR, "activity.json")
 MAX_EVENTS_PER_USER = 100
 
-
 def _load() -> dict:
     if not os.path.exists(_ACTIVITY_FILE):
         return {}
@@ -25,7 +19,6 @@ def _load() -> dict:
     except Exception:
         return {}
 
-
 def _save(data: dict) -> None:
     os.makedirs(_DATA_DIR, exist_ok=True)
     try:
@@ -34,7 +27,6 @@ def _save(data: dict) -> None:
     except Exception as exc:
         logger.warning("activity_log: could not save: %s", exc)
 
-
 def log_activity(
     owner: str,
     event_type: str,
@@ -42,7 +34,6 @@ def log_activity(
     detail: str = "",
     link: str = "",
 ) -> None:
-    """Append one event for *owner*. Silently swallows errors so callers are never affected."""
     try:
         data = _load()
         events: list = data.get(owner, [])
@@ -59,9 +50,7 @@ def log_activity(
     except Exception as exc:
         logger.warning("log_activity failed (owner=%s): %s", owner, exc)
 
-
 def list_activities(owner: str, limit: int = 50) -> list:
-    """Return the *limit* most recent events for *owner*, newest first."""
     try:
         return _load().get(owner, [])[:limit]
     except Exception:

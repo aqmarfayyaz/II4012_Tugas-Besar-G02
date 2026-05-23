@@ -21,9 +21,7 @@ oauth = OAuth()
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 USERS_FILE = os.path.join(DATA_DIR, 'users.json')
 
-
 def init_oauth(app):
-    """Initialize OAuth clients"""
     oauth.init_app(app)
     client_id = app.config.get('GOOGLE_CLIENT_ID')
     client_secret = app.config.get('GOOGLE_CLIENT_SECRET')
@@ -50,29 +48,24 @@ def init_oauth(app):
             ', '.join(missing)
         )
 
-
 def _ensure_data_dir():
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(USERS_FILE):
         with open(USERS_FILE, 'w', encoding='utf-8') as f:
             json.dump({}, f)
 
-
 def _load_users():
     _ensure_data_dir()
     with open(USERS_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
-
 
 def _save_users(users):
     _ensure_data_dir()
     with open(USERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(users, f, indent=2)
 
-
 def _normalize_email(email: str) -> str:
     return email.strip().lower()
-
 
 def _build_profile(email: str, name: Optional[str] = None, provider: str = 'password') -> dict:
     return {
@@ -81,7 +74,6 @@ def _build_profile(email: str, name: Optional[str] = None, provider: str = 'pass
         'name': name or '',
         'provider': provider
     }
-
 
 def _issue_token(subject: str) -> str:
     now = datetime.utcnow()
@@ -93,17 +85,14 @@ def _issue_token(subject: str) -> str:
     }
     return jwt.encode(payload, current_app.config['JWT_SECRET'], algorithm=current_app.config['JWT_ALGORITHM'])
 
-
 def _decode_token(token: str) -> dict:
     return jwt.decode(token, current_app.config['JWT_SECRET'], algorithms=[current_app.config['JWT_ALGORITHM']])
-
 
 def _get_token_from_header() -> Optional[str]:
     auth_header = request.headers.get('Authorization', '')
     if auth_header.lower().startswith('bearer '):
         return auth_header.split(' ', 1)[1].strip()
     return None
-
 
 def _get_user_by_token(token: str):
     try:
@@ -119,7 +108,6 @@ def _get_user_by_token(token: str):
     if not user or user.get('token') != token:
         return None, None, 'invalid'
     return username, user, None
-
 
 def require_auth(func):
     @wraps(func)
@@ -140,39 +128,8 @@ def require_auth(func):
 
     return wrapper
 
-
 @bp.route('/register', methods=['POST'])
 def register():
-    """
-    Register user
-    ---
-    tags:
-      - Auth
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - email
-            - password
-          properties:
-            name:
-              type: string
-              example: "Alex Recruiter"
-            email:
-              type: string
-              example: "alex@company.com"
-            password:
-              type: string
-              example: "P@ssw0rd123"
-    responses:
-      201:
-        description: User created
-      400:
-        description: Validation error
-    """
     data = request.get_json() or {}
     email = data.get('email') or data.get('username')
     password = data.get('password')
@@ -198,36 +155,8 @@ def register():
     _save_users(users)
     return jsonify(format_response(data={'token': token, 'profile': profile}, message='user created', code=201)), 201
 
-
 @bp.route('/login', methods=['POST'])
 def login():
-    """
-    Login user
-    ---
-    tags:
-      - Auth
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - email
-            - password
-          properties:
-            email:
-              type: string
-              example: "alex@company.com"
-            password:
-              type: string
-              example: "P@ssw0rd123"
-    responses:
-      200:
-        description: Login successful
-      401:
-        description: Invalid credentials
-    """
     data = request.get_json() or {}
     email = data.get('email') or data.get('username')
     password = data.get('password')
@@ -251,20 +180,8 @@ def login():
     _save_users(users)
     return jsonify(format_response(data={'token': token, 'profile': profile}, message='login successful', code=200)), 200
 
-
 @bp.route('/google', methods=['GET'])
 def google_auth():
-    """
-    Start Google OAuth
-    ---
-    tags:
-      - Auth
-    responses:
-      302:
-        description: Redirect to Google OAuth
-      500:
-        description: Google OAuth not configured
-    """
     if not current_app.config.get('GOOGLE_CLIENT_ID') or not current_app.config.get('GOOGLE_CLIENT_SECRET'):
         return jsonify(format_response(message='Google OAuth not configured', status='error', code=500)), 500
 
@@ -272,20 +189,8 @@ def google_auth():
     redirect_uri = current_app.config.get('GOOGLE_REDIRECT_URI')
     return client.authorize_redirect(redirect_uri)
 
-
 @bp.route('/google/callback', methods=['GET'])
 def google_callback():
-    """
-    Google OAuth callback
-    ---
-    tags:
-      - Auth
-    responses:
-      302:
-        description: Redirect to frontend with token
-      400:
-        description: Missing email
-    """
     try:
         client = oauth.create_client('google')
         client.authorize_access_token()
@@ -322,23 +227,9 @@ def google_callback():
     separator = '&' if '?' in frontend_url else '?'
     return redirect(f"{frontend_url}{separator}{query}")
 
-
 @bp.route('/logout', methods=['POST'])
 @require_auth
 def logout():
-    """
-    Logout user
-    ---
-    tags:
-      - Auth
-    security:
-      - BearerAuth: []
-    responses:
-      200:
-        description: Logout successful
-      401:
-        description: Invalid token
-    """
     users = _load_users()
     user = users.get(g.current_username)
     if not user:
@@ -348,36 +239,9 @@ def logout():
     _save_users(users)
     return jsonify(format_response(message='logout successful', code=200)), 200
 
-
 @bp.route('/profile', methods=['GET', 'PUT'])
 @require_auth
 def profile():
-    """
-    Get or update profile
-    ---
-    tags:
-      - Auth
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: body
-        name: body
-        required: false
-        schema:
-          type: object
-          properties:
-            name:
-              type: string
-              example: "Alex Recruiter"
-            department:
-              type: string
-              example: "Talent Acquisition"
-    responses:
-      200:
-        description: Profile returned or updated
-      401:
-        description: Invalid token
-    """
     user = g.current_user
     if request.method == 'GET':
         return jsonify(format_response(data={'profile': user.get('profile', {})}, code=200)), 200

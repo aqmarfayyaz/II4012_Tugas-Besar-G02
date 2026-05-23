@@ -1,6 +1,3 @@
-"""
-Job family classifier using TF-IDF (word + char) and Logistic Regression.
-"""
 
 from typing import Dict, List, Optional
 import logging
@@ -9,7 +6,6 @@ from joblib import load
 from scipy.sparse import hstack
 
 logger = logging.getLogger(__name__)
-
 
 class JobFamilyClassifier:
     def __init__(

@@ -1,7 +1,3 @@
-"""
-Project management routes — stores data in Firebase Firestore
-(falls back to local projects.json when Firebase is not configured).
-"""
 
 from flask import Blueprint, request, jsonify, g
 import json
@@ -35,32 +31,23 @@ REQUIRED_FIELDS = [
 ALLOWED_EMPLOYMENT_TYPES = {"full-time", "internship", "contract"}
 ALLOWED_STATUS = {"draft", "active", "closed"}
 
-
-# ─── Local JSON storage (fallback) ────────────────────────────────────────
-
 def _ensure_data_dir():
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(PROJECTS_FILE):
         with open(PROJECTS_FILE, "w", encoding="utf-8") as f:
             json.dump({}, f)
 
-
 def _json_load() -> dict:
     _ensure_data_dir()
     with open(PROJECTS_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
-
 
 def _json_save(projects: dict) -> None:
     _ensure_data_dir()
     with open(PROJECTS_FILE, "w", encoding="utf-8") as f:
         json.dump(projects, f, indent=2)
 
-
-# ─── Storage abstraction (Firestore ↔ JSON) ───────────────────────────────
-
 def _load_all(owner: str = None) -> dict:
-    """Return {project_id: project_dict}, optionally filtered by owner."""
     if firebase_db.is_available():
         result = firebase_db.list_projects(owner=owner)
         if result is not None:
@@ -70,39 +57,32 @@ def _load_all(owner: str = None) -> dict:
         return {pid: p for pid, p in all_projects.items() if p.get("created_by") == owner}
     return all_projects
 
-
 def _get_one(project_id: str):
-    """Return project dict or None."""
     if firebase_db.is_available():
         result = firebase_db.get_project(project_id)
         if result is None:
-            # Firestore call failed — fall back
-            return _json_load().get(project_id)
-        return result if result else None  # {} means not found
-    return _json_load().get(project_id)
 
+            return _json_load().get(project_id)
+        return result if result else None
+    return _json_load().get(project_id)
 
 def _save_one(project_id: str, project: dict) -> None:
     if firebase_db.is_available():
         if firebase_db.save_project(project_id, project):
             return
-    # fallback
+
     projects = _json_load()
     projects[project_id] = project
     _json_save(projects)
-
 
 def _delete_one(project_id: str) -> None:
     if firebase_db.is_available():
         if firebase_db.delete_project(project_id):
             return
-    # fallback
+
     projects = _json_load()
     projects.pop(project_id, None)
     _json_save(projects)
-
-
-# ─── Validation helpers ───────────────────────────────────────────────────
 
 def _normalize_skills(value):
     if isinstance(value, list):
@@ -110,7 +90,6 @@ def _normalize_skills(value):
     if isinstance(value, str):
         return [item.strip() for item in value.split(",") if item.strip()]
     return []
-
 
 def _validate_payload(data, partial=False):
     if not partial:
@@ -128,28 +107,11 @@ def _validate_payload(data, partial=False):
 
     return True, None
 
-
-# ─── Routes ───────────────────────────────────────────────────────────────
-
 logger = logging.getLogger(__name__)
-
 
 @bp.route("", methods=["GET"])
 @require_auth
 def list_projects():
-    """
-    List projects
-    ---
-    tags:
-      - Projects
-    security:
-      - BearerAuth: []
-    responses:
-      200:
-        description: Projects retrieved
-      401:
-        description: Unauthorized
-    """
     try:
         projects = _load_all(owner=g.current_username)
         project_list = list(projects.values())
@@ -164,50 +126,9 @@ def list_projects():
             message="Retrieved 0 projects",
         )), 200
 
-
 @bp.route("/<project_id>/candidates", methods=["GET"])
 @require_auth
 def get_project_candidates(project_id):
-    """
-    Get candidates for a specific project
-    ---
-    tags:
-      - Projects
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: project_id
-        required: true
-        type: string
-      - in: query
-        name: search
-        type: string
-        required: false
-      - in: query
-        name: status
-        type: string
-        required: false
-      - in: query
-        name: min_score
-        type: number
-        required: false
-      - in: query
-        name: max_score
-        type: number
-        required: false
-      - in: query
-        name: page
-        type: integer
-        required: false
-      - in: query
-        name: page_size
-        type: integer
-        required: false
-    responses:
-      200:
-        description: Candidate list
-    """
     try:
         search = request.args.get("search", "").strip().lower()
         status_param = request.args.get("status", "").strip().lower()
@@ -272,38 +193,9 @@ def get_project_candidates(project_id):
     except Exception as exc:
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
 @bp.route("", methods=["POST"])
 @require_auth
 def create_project():
-    """
-    Create project
-    ---
-    tags:
-      - Projects
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - name
-            - job_title
-            - department
-            - job_description
-            - required_skills
-            - employment_type
-            - start_date
-            - end_date
-    responses:
-      201:
-        description: Project created
-      400:
-        description: Validation error
-    """
     data = request.get_json() or {}
     valid, error = _validate_payload(data)
     if not valid:
@@ -348,28 +240,9 @@ def create_project():
         code=201,
     )), 201
 
-
 @bp.route("/<project_id>", methods=["GET"])
 @require_auth
 def get_project(project_id):
-    """
-    Get project detail
-    ---
-    tags:
-      - Projects
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: project_id
-        required: true
-        type: string
-    responses:
-      200:
-        description: Project retrieved
-      404:
-        description: Project not found
-    """
     project = _get_one(project_id)
     if not project:
         return jsonify(format_response(
@@ -381,33 +254,9 @@ def get_project(project_id):
         message="Project retrieved",
     )), 200
 
-
 @bp.route("/<project_id>", methods=["PUT"])
 @require_auth
 def update_project(project_id):
-    """
-    Update project
-    ---
-    tags:
-      - Projects
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: project_id
-        required: true
-        type: string
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-    responses:
-      200:
-        description: Project updated
-      404:
-        description: Project not found
-    """
     data = request.get_json() or {}
     valid, error = _validate_payload(data, partial=True)
     if not valid:
@@ -440,28 +289,9 @@ def update_project(project_id):
         message="Project updated",
     )), 200
 
-
 @bp.route("/<project_id>", methods=["DELETE"])
 @require_auth
 def delete_project(project_id):
-    """
-    Delete project
-    ---
-    tags:
-      - Projects
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: project_id
-        required: true
-        type: string
-    responses:
-      200:
-        description: Project deleted
-      404:
-        description: Project not found
-    """
     project = _get_one(project_id)
     if not project:
         return jsonify(format_response(

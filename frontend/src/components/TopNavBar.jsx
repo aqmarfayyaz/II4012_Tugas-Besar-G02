@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 
 const LS_KEY = 'notifications_last_seen_at';
 
-// ── debounce helper ───────────────────────────────────────────────────────
 function useDebounce(value, delay) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -29,7 +28,6 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
 
   const debouncedQuery = useDebounce(query.trim(), 300);
 
-  // ── unread notifications count ─────────────────────────────────────────
   useEffect(() => {
     getActivity({ limit: 20 }).then(resp => {
       const events = resp.data?.data?.events || resp.data?.events || [];
@@ -40,7 +38,6 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
     }).catch(() => {});
   }, []);
 
-  // ── search candidates via API ──────────────────────────────────────────
   const runSearch = useCallback(async (q) => {
     if (!q) { setCandidateResults([]); return; }
     setSearching(true);
@@ -60,7 +57,6 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
     setOpen(!!debouncedQuery);
   }, [debouncedQuery, runSearch]);
 
-  // ── project results (client-side filter) ─────────────────────────────
   const projectResults = debouncedQuery
     ? projects.filter(p =>
         p.name?.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
@@ -70,7 +66,6 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
 
   const hasResults = projectResults.length > 0 || candidateResults.length > 0;
 
-  // ── close on outside click ────────────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -81,7 +76,6 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // ── keyboard: Escape closes ────────────────────────────────────────────
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') { setOpen(false); inputRef.current?.blur(); }
   };
@@ -104,7 +98,7 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
       </div>
 
       <div className="flex items-center gap-6">
-        {/* ── Global Search ── */}
+
         <div className="relative w-64 hidden md:block" ref={containerRef}>
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">search</span>
           {searching && (
@@ -130,7 +124,6 @@ const TopNavBar = ({ title = 'Dashboard' }) => {
             autoComplete="off"
           />
 
-          {/* ── Dropdown ── */}
           {open && (
             <div className="absolute top-full mt-2 left-0 w-[360px] bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
               {!hasResults && !searching && (

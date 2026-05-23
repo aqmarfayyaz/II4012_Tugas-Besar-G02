@@ -1,6 +1,3 @@
-﻿"""
-CV Parser using pdfplumber/python-docx + OpenAI (with heuristic fallback)
-"""
 
 import json
 import logging
@@ -15,7 +12,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-
 
 class CVParser:
 

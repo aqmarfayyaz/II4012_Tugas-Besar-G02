@@ -1,9 +1,5 @@
-"""
-Simple department classifier based on keyword matching.
-"""
 
 from typing import Dict, List
-
 
 class DepartmentClassifier:
     def __init__(self) -> None:

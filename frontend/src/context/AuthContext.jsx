@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }) => {
       try {
         await logoutUser(token);
       } catch (error) {
-        // Ignore API errors on logout
+
       }
     }
     clearAuth();
@@ -166,7 +166,7 @@ export const AuthProvider = ({ children }) => {
       const profile = payload?.profile || payload;
       setUser(profile);
     } catch {
-      // silently ignore — stale user state is acceptable
+
     }
   };
 

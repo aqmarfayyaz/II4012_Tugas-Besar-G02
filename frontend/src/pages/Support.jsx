@@ -61,7 +61,6 @@ const Support = () => {
           </p>
         </div>
 
-        {/* Quick links */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { icon: 'upload_file', label: 'Upload CVs', path: '/upload', desc: 'Add candidate CVs to a project' },
@@ -80,7 +79,6 @@ const Support = () => {
           ))}
         </div>
 
-        {/* FAQ */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <h3 className="text-body-md font-semibold text-primary mb-2">Frequently Asked Questions</h3>
           <div>
@@ -88,7 +86,6 @@ const Support = () => {
           </div>
         </div>
 
-        {/* Contact */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <h3 className="text-body-md font-semibold text-primary mb-4">Contact Support</h3>
           <div className="flex flex-col sm:flex-row gap-4">

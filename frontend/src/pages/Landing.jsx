@@ -8,7 +8,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
+
       <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50 flex items-center px-8 justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-2xl">insights</span>
@@ -21,11 +21,11 @@ const Landing = () => {
       </header>
 
       <main className="pt-16">
-        {/* Hero Section */}
+
         <section className="bg-white pt-20 pb-28">
           <div className="max-w-7xl mx-auto px-8">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Left: Copy */}
+
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary-container text-on-secondary-fixed-variant rounded-full mb-5">
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
@@ -46,7 +46,6 @@ const Landing = () => {
                 </button>
               </div>
 
-              {/* Right: Visual */}
               <div className="relative pb-8">
                 <div className="absolute -top-16 -right-16 w-80 h-80 bg-secondary-container/30 blur-[80px] rounded-full pointer-events-none"></div>
                 <div className="relative rounded-2xl shadow-2xl overflow-hidden bg-slate-900 p-4">
@@ -61,7 +60,7 @@ const Landing = () => {
                     <span className="text-xs text-white font-semibold">Live Screening Active</span>
                   </div>
                 </div>
-                {/* KPI Badge */}
+
                 <div className="absolute -bottom-2 -left-4 bg-white border border-slate-200 p-5 rounded-xl shadow-xl flex items-center gap-4">
                   <div className="w-11 h-11 bg-on-secondary-container/10 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="material-symbols-outlined text-on-secondary-container">trending_up</span>
@@ -76,7 +75,6 @@ const Landing = () => {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-8">
             <div className="text-center mb-14">
@@ -87,7 +85,7 @@ const Landing = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Feature 1 — wide */}
+
               <div className="md:col-span-2 bg-white border border-slate-200 rounded-2xl p-8 flex flex-col justify-between hover:shadow-lg transition-all group">
                 <div className="max-w-md">
                   <span className="material-symbols-outlined text-primary text-4xl mb-4 block group-hover:scale-110 transition-transform">cloud_upload</span>
@@ -106,7 +104,6 @@ const Landing = () => {
                 </div>
               </div>
 
-              {/* Feature 2 */}
               <div className="bg-primary text-on-primary rounded-2xl p-8 flex flex-col hover:shadow-xl transition-all">
                 <span className="material-symbols-outlined text-secondary-fixed text-4xl mb-4 block">leaderboard</span>
                 <h3 className="text-xl font-bold text-white mb-3">Intelligent Ranking</h3>
@@ -126,7 +123,6 @@ const Landing = () => {
                 </div>
               </div>
 
-              {/* Feature 3 */}
               <div className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col hover:shadow-lg transition-all">
                 <span className="material-symbols-outlined text-primary text-4xl mb-4 block">insights</span>
                 <h3 className="text-xl font-bold text-primary mb-3">Deep Insights</h3>
@@ -135,7 +131,6 @@ const Landing = () => {
                 </p>
               </div>
 
-              {/* Feature 4 */}
               <div className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col hover:shadow-lg transition-all">
                 <span className="material-symbols-outlined text-primary text-4xl mb-4 block">hub</span>
                 <h3 className="text-xl font-bold text-primary mb-3">Enterprise Sync</h3>
@@ -144,7 +139,6 @@ const Landing = () => {
                 </p>
               </div>
 
-              {/* Feature 5 */}
               <div className="bg-surface-container-high rounded-2xl p-8 flex flex-col hover:shadow-lg transition-all">
                 <span className="material-symbols-outlined text-primary text-4xl mb-4 block">shield_lock</span>
                 <h3 className="text-xl font-bold text-primary mb-3">Bank-Grade Security</h3>
@@ -156,7 +150,6 @@ const Landing = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-20 bg-white">
           <div className="max-w-4xl mx-auto px-8">
             <div className="bg-primary rounded-3xl px-12 py-16 text-center relative overflow-hidden">
@@ -178,11 +171,10 @@ const Landing = () => {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-10">
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-8">
-            {/* Brand */}
+
             <div className="max-w-xs">
               <div className="flex items-center gap-2 mb-3">
                 <span className="material-symbols-outlined text-primary">insights</span>
@@ -193,7 +185,6 @@ const Landing = () => {
               </p>
             </div>
 
-            {/* Product links */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest text-primary mb-4">Product</h4>
               <ul className="space-y-2.5 text-sm text-on-surface-variant">

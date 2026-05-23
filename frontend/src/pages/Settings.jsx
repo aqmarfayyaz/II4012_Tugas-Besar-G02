@@ -3,7 +3,6 @@ import Layout from '../components/Layout';
 import { fetchMyProfile, saveMyProfile } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-// ── Resize an image file to a square data-URL (max side = size px) ────────
 const resizeImage = (file, size = 256) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -24,7 +23,6 @@ const resizeImage = (file, size = 256) =>
     reader.readAsDataURL(file);
   });
 
-// ── Toggle switch component ───────────────────────────────────────────────
 const Toggle = ({ checked, onChange, disabled = false }) => (
   <button
     type="button"
@@ -45,7 +43,6 @@ const Toggle = ({ checked, onChange, disabled = false }) => (
   </button>
 );
 
-// ── Toast notification ────────────────────────────────────────────────────
 const Toast = ({ toast, onDismiss }) => {
   if (!toast) return null;
   const isError = toast.type === 'error';
@@ -68,16 +65,14 @@ const Toast = ({ toast, onDismiss }) => {
   );
 };
 
-// ── Skeleton ──────────────────────────────────────────────────────────────
 const Pulse = ({ className }) => (
   <div className={`animate-pulse bg-slate-200 rounded ${className}`} />
 );
 
-// ── Main component ────────────────────────────────────────────────────────
 const Settings = () => {
   const { refreshProfile } = useAuth();
-  const [profile, setProfile] = useState(null);          // last saved
-  const [form, setForm] = useState({                     // current editable
+  const [profile, setProfile] = useState(null);
+  const [form, setForm] = useState({
     name: '',
     company_name: '',
     notifications_enabled: true,
@@ -90,14 +85,12 @@ const Settings = () => {
   const toastTimer = useRef(null);
   const avatarInputRef = useRef(null);
 
-  // ── Show toast ────────────────────────────────────────────────────────
   const showToast = useCallback((type, message) => {
     clearTimeout(toastTimer.current);
     setToast({ type, message });
     toastTimer.current = setTimeout(() => setToast(null), 3500);
   }, []);
 
-  // ── Load profile on mount ─────────────────────────────────────────────
   const loadProfile = useCallback(async () => {
     setLoading(true);
     try {
@@ -107,7 +100,7 @@ const Settings = () => {
       const loaded = {
         name: p?.name || '',
         company_name: p?.company_name || '',
-        notifications_enabled: p?.notifications_enabled !== false, // default true
+        notifications_enabled: p?.notifications_enabled !== false,
         avatar: p?.avatar || '',
       };
       setProfile(loaded);
@@ -121,7 +114,6 @@ const Settings = () => {
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  // ── Track dirty state ─────────────────────────────────────────────────
   useEffect(() => {
     if (!profile) return;
     const changed =
@@ -132,7 +124,6 @@ const Settings = () => {
     setIsDirty(changed);
   }, [form, profile]);
 
-  // ── Avatar upload ─────────────────────────────────────────────────────
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -146,20 +137,17 @@ const Settings = () => {
     } catch {
       showToast('error', 'Could not process the image. Try another file.');
     }
-    // reset input so the same file can be re-selected
+
     e.target.value = '';
   };
 
-
-  // ── Field change ──────────────────────────────────────────────────────
   const handleChange = (field, value) => {
     setForm(f => ({ ...f, [field]: value }));
   };
 
-  // ── Save ──────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!isDirty) return;
-    // Basic validation
+
     if (form.name && form.name.trim().length < 2) {
       showToast('error', 'Display name must be at least 2 characters.');
       return;
@@ -193,26 +181,22 @@ const Settings = () => {
     }
   };
 
-  // ── Cancel / reset ────────────────────────────────────────────────────
   const handleCancel = () => {
     if (!profile) return;
     setForm(profile);
     setIsDirty(false);
   };
 
-  // ── Email from localStorage / AuthContext (read-only display) ─────────
-  // The email is stored in the token subject, not editable here
   const storedEmail = (() => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) return '';
-      // JWT payload is the second segment, base64-encoded
+
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload?.sub || '';
     } catch { return ''; }
   })();
 
-  // ── Loading skeleton ──────────────────────────────────────────────────
   if (loading) {
     return (
       <Layout title="Settings">
@@ -232,12 +216,11 @@ const Settings = () => {
 
   return (
     <Layout title="Settings">
-      {/* Toast */}
+
       <Toast toast={toast} onDismiss={() => setToast(null)} />
 
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
 
-        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Settings</h1>
@@ -269,11 +252,9 @@ const Settings = () => {
           )}
         </div>
 
-        {/* ── Account Settings ──────────────────────────────────────────── */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <h3 className="text-body-md font-semibold text-primary mb-6">Account Settings</h3>
 
-          {/* Profile Picture */}
           <div className="flex items-center gap-5 mb-6 pb-6 border-b border-slate-100">
             <div className="relative flex-shrink-0">
               {form.avatar ? (
@@ -330,7 +311,7 @@ const Settings = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Display Name */}
+
             <div>
               <label className="text-label-sm text-secondary uppercase tracking-wider font-semibold block mb-2">
                 Display Name
@@ -344,7 +325,6 @@ const Settings = () => {
               />
             </div>
 
-            {/* Email (read-only) */}
             <div>
               <label className="text-label-sm text-secondary uppercase tracking-wider font-semibold block mb-2">
                 Email Address
@@ -361,7 +341,6 @@ const Settings = () => {
               <p className="text-xs text-slate-400 mt-1">Email cannot be changed.</p>
             </div>
 
-            {/* Company Name */}
             <div className="md:col-span-2">
               <label className="text-label-sm text-secondary uppercase tracking-wider font-semibold block mb-2">
                 Company / Organisation Name
@@ -377,12 +356,10 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* ── Preferences ───────────────────────────────────────────────── */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <h3 className="text-body-md font-semibold text-primary mb-6">Preferences</h3>
           <div className="space-y-0">
 
-            {/* Email Notifications */}
             <div className="flex items-center justify-between py-4 border-b border-slate-100">
               <div>
                 <p className="text-sm font-semibold text-slate-800">Email Notifications</p>
@@ -399,7 +376,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* ── Danger Zone ───────────────────────────────────────────────── */}
         <div className="bg-red-50 rounded-xl border border-red-200 p-6">
           <h3 className="text-body-md font-semibold text-red-700 mb-2">Danger Zone</h3>
           <p className="text-xs text-red-500 mb-4">
@@ -413,7 +389,6 @@ const Settings = () => {
           </button>
         </div>
 
-        {/* ── Save footer (always visible if dirty) ─────────────────────── */}
         <div className={`flex justify-end gap-3 pt-4 border-t border-slate-100 transition-opacity ${isDirty ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <button
             onClick={handleCancel}

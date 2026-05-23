@@ -698,5 +698,187 @@
     "total_candidates": 1,
     "created_at": "2026-05-23T11:22:53.993026",
     "owner": "veliciagbrl@gmail.com"
+  },
+  "18c026fe-671a-4869-8c97-6690de3561d6": {
+    "result_id": "18c026fe-671a-4869-8c97-6690de3561d6",
+    "project_id": "f574f23c-bdb0-4908-8d0b-b1dad9bfc1ae",
+    "ranked_candidates": [
+      {
+        "candidate_id": "VELIC_VELIC_20260524060806",
+        "category_match": 1,
+        "email": "veliciagbrl@gmail.com",
+        "insight": "Matched 3/9 required skills. Missing: communication, data science, data visualization.... \u274c Limited alignment with this role.",
+        "name": "VELICIA CHRISTINA GABRIEL",
+        "overall_score": 31.16,
+        "predicted_category": "TECH",
+        "rank": 1,
+        "similarity_score": 15.99,
+        "skill_details": {
+          "matched_skills": [
+            "python",
+            "sql",
+            "tableau"
+          ],
+          "missing_skills": [
+            "communication",
+            "data science",
+            "data visualization",
+            "power bi",
+            "r",
+            "statistics"
+          ],
+          "preferred_matched": 0,
+          "preferred_total": 0,
+          "required_matched": 3,
+          "required_total": 9
+        },
+        "skill_score": 23.33,
+        "skills": [
+          "public speaking",
+          "critical thinking",
+          "people management",
+          "teamwork",
+          "leadership",
+          "\u25cf hardskills: microsoft office",
+          "canva",
+          "figma",
+          "python",
+          "html",
+          "css",
+          "javascript",
+          "java",
+          "nestjs",
+          "nextjs",
+          "react",
+          "tableau",
+          "sql",
+          "restapi",
+          "\u25cf interests: data analytics",
+          "business analysis",
+          "product analysis",
+          "artificial intelligence",
+          "it solutions",
+          "project",
+          "and product management",
+          "\u25cf language: indonesian (native)",
+          "english (advanced)",
+          "chinese (elementary)"
+        ],
+        "summary": "Third-year Information Systems and Technology student at ITB, driven by an ambitious commitment to continuous"
+      }
+    ],
+    "jd_data": {
+      "full_text": "We are seeking a detail-oriented and analytical Data Analyst to collect, process, and interpret data to support business decision-making and operational improvement. The ideal candidate will analyze large datasets, identify trends and insights, create dashboards and reports, and collaborate with cross-functional teams to drive data-driven strategies. Candidates should have strong skills in SQL, Excel, and data visualization tools such as Tableau or Power BI, with additional knowledge of Python or R considered a plus. A bachelor\u2019s degree in Data Science, Statistics, Computer Science, Mathematics, or a related field is preferred, along with excellent problem-solving, communication, and critical-thinking abilities.",
+      "jd_id": "JD_93694086",
+      "job_category": "Data",
+      "job_title": "Job Position",
+      "preferred_skills": [],
+      "required_skills": [
+        "data visualization",
+        "communication",
+        "data science",
+        "statistics",
+        "power bi",
+        "tableau",
+        "python",
+        "sql",
+        "r"
+      ]
+    },
+    "job_category": "Data",
+    "total_candidates": 1,
+    "created_at": "2026-05-23T23:08:19.072321",
+    "owner": "veli@gmail.com"
+  },
+  "45a07618-5902-412e-b3d0-0f8df975f06f": {
+    "result_id": "45a07618-5902-412e-b3d0-0f8df975f06f",
+    "project_id": "f574f23c-bdb0-4908-8d0b-b1dad9bfc1ae",
+    "ranked_candidates": [
+      {
+        "candidate_id": "VELIC_VELIC_20260524060806",
+        "category_match": 1,
+        "email": "veliciagbrl@gmail.com",
+        "insight": "Matched 3/9 required skills. Missing: communication, data science, data visualization.... \u274c Limited alignment with this role.",
+        "name": "VELICIA CHRISTINA GABRIEL",
+        "overall_score": 31.16,
+        "predicted_category": "TECH",
+        "rank": 1,
+        "similarity_score": 15.99,
+        "skill_details": {
+          "matched_skills": [
+            "python",
+            "sql",
+            "tableau"
+          ],
+          "missing_skills": [
+            "communication",
+            "data science",
+            "data visualization",
+            "power bi",
+            "r",
+            "statistics"
+          ],
+          "preferred_matched": 0,
+          "preferred_total": 0,
+          "required_matched": 3,
+          "required_total": 9
+        },
+        "skill_score": 23.33,
+        "skills": [
+          "public speaking",
+          "critical thinking",
+          "people management",
+          "teamwork",
+          "leadership",
+          "\u25cf hardskills: microsoft office",
+          "canva",
+          "figma",
+          "python",
+          "html",
+          "css",
+          "javascript",
+          "java",
+          "nestjs",
+          "nextjs",
+          "react",
+          "tableau",
+          "sql",
+          "restapi",
+          "\u25cf interests: data analytics",
+          "business analysis",
+          "product analysis",
+          "artificial intelligence",
+          "it solutions",
+          "project",
+          "and product management",
+          "\u25cf language: indonesian (native)",
+          "english (advanced)",
+          "chinese (elementary)"
+        ],
+        "summary": "Third-year Information Systems and Technology student at ITB, driven by an ambitious commitment to continuous"
+      }
+    ],
+    "jd_data": {
+      "full_text": "We are seeking a detail-oriented and analytical Data Analyst to collect, process, and interpret data to support business decision-making and operational improvement. The ideal candidate will analyze large datasets, identify trends and insights, create dashboards and reports, and collaborate with cross-functional teams to drive data-driven strategies. Candidates should have strong skills in SQL, Excel, and data visualization tools such as Tableau or Power BI, with additional knowledge of Python or R considered a plus. A bachelor\u2019s degree in Data Science, Statistics, Computer Science, Mathematics, or a related field is preferred, along with excellent problem-solving, communication, and critical-thinking abilities.",
+      "jd_id": "JD_93694086",
+      "job_category": "Data",
+      "job_title": "Job Position",
+      "preferred_skills": [],
+      "required_skills": [
+        "data visualization",
+        "communication",
+        "data science",
+        "statistics",
+        "power bi",
+        "tableau",
+        "python",
+        "sql",
+        "r"
+      ]
+    },
+    "job_category": "Data",
+    "total_candidates": 1,
+    "created_at": "2026-05-23T23:08:19.323875",
+    "owner": "veli@gmail.com"
   }
 }

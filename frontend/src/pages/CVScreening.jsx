@@ -19,10 +19,6 @@ const CVScreening = () => {
 
     const backendURL = "http://localhost:5000/api/screening";
 
-    // ==========================================
-    // Upload + Parse CV
-    // ==========================================
-
     const handleUploadCV = async () => {
 
         if (!cvFile) {
@@ -65,10 +61,6 @@ const CVScreening = () => {
             setLoading(false);
         }
     };
-
-    // ==========================================
-    // Match CV vs JD
-    // ==========================================
 
     const handleMatch = async () => {
 
@@ -138,10 +130,6 @@ const CVScreening = () => {
                 AI-Based CV Screening
             </h1>
 
-            {/* ========================= */}
-            {/* Upload CV */}
-            {/* ========================= */}
-
             <div
                 style={{
                     marginTop: "30px"
@@ -175,10 +163,6 @@ const CVScreening = () => {
                 </button>
 
             </div>
-
-            {/* ========================= */}
-            {/* Parsed CV */}
-            {/* ========================= */}
 
             {
                 parsedCV && (
@@ -224,10 +208,6 @@ const CVScreening = () => {
                     </div>
                 )
             }
-
-            {/* ========================= */}
-            {/* Job Description */}
-            {/* ========================= */}
 
             <div
                 style={{
@@ -300,10 +280,6 @@ const CVScreening = () => {
                 </button>
 
             </div>
-
-            {/* ========================= */}
-            {/* Result */}
-            {/* ========================= */}
 
             {
                 result && (

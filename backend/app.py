@@ -1,6 +1,3 @@
-"""
-Main Flask Application for AI-based CV Screening System
-"""
 
 import logging
 from flask import Flask, jsonify
@@ -11,11 +8,10 @@ from routes import upload, screening, candidates, auth, projects, dashboard, ana
 
 logging.basicConfig(level=logging.INFO)
 
-
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    # Enable CORS for frontend — explicitly allow Authorization header
+
     CORS(app, resources={r"/api/*": {
         "origins": "*",
         "allow_headers": ["Content-Type", "Authorization", "Accept"],
@@ -61,15 +57,6 @@ def create_app(config_class=Config):
 
     @app.route("/", methods=["GET"])
     def index():
-        """
-        Service status
-        ---
-        tags:
-          - Health
-        responses:
-          200:
-            description: Service status
-        """
         return jsonify(
             {
                 "message": "CV Screening backend is running",
@@ -81,18 +68,8 @@ def create_app(config_class=Config):
 
     @app.route("/api", methods=["GET"])
     def api_root():
-        """
-        API root
-        ---
-        tags:
-          - Health
-        responses:
-          200:
-            description: API root
-        """
         return jsonify({"message": "API root", "health": "/api/health"}), 200
 
-    # Register blueprints
     app.register_blueprint(upload.bp)
     app.register_blueprint(screening.bp)
     app.register_blueprint(candidates.bp)
@@ -102,24 +79,13 @@ def create_app(config_class=Config):
     app.register_blueprint(analytics.bp)
     app.register_blueprint(activity.bp)
 
-    # Initialize OAuth clients
     _logger = logging.getLogger(__name__)
     _logger.info("GOOGLE_CLIENT_ID loaded: %s", bool(app.config.get('GOOGLE_CLIENT_ID')))
     _logger.info("GOOGLE_CLIENT_SECRET loaded: %s", bool(app.config.get('GOOGLE_CLIENT_SECRET')))
     auth.init_oauth(app)
 
-    # Health check endpoint
     @app.route("/api/health", methods=["GET"])
     def health():
-        """
-        Health check
-        ---
-        tags:
-          - Health
-        responses:
-          200:
-            description: Health status
-        """
         return jsonify({"status": "ok", "message": "CV Screening System is running"}), 200
 
     @app.errorhandler(404)
@@ -131,7 +97,6 @@ def create_app(config_class=Config):
         return jsonify({"error": "Internal server error"}), 500
 
     return app
-
 
 if __name__ == "__main__":
     app = create_app()

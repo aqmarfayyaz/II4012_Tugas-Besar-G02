@@ -42,27 +42,23 @@ const ProjectDetail = () => {
     setLoading(true);
     setError('');
     try {
-      // Fetch project, candidates, and screening results in parallel so loading
-      // only clears when all three are ready — prevents empty-state flash.
+
       const [projResp, candResp, screenResp] = await Promise.all([
         getProject(id),
         getProjectCandidates(id),
         getScreeningResults(id),
       ]);
 
-      // Project
       const payload = projResp.data?.data || projResp.data;
       const detail = payload?.project || payload?.data?.project;
       setProject(detail || null);
       if (detail?.id) selectProject(detail.id);
 
-      // Candidates
       const candData = candResp.data?.data || candResp.data;
       const candList = candData?.candidates || [];
       setCandidates(candList);
       setCandidateTotal(candData?.total ?? candList.length);
 
-      // Screening results (sorted newest first by the backend)
       const screenData = screenResp.data?.data || screenResp.data;
       setScreeningResults(screenData?.results || []);
     } catch (err) {
@@ -74,7 +70,6 @@ const ProjectDetail = () => {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // ── KPI derivations ──────────────────────────────────────────────────────
   const screened = candidates.filter(c => (c.match_score || 0) > 0).length;
   const shortlisted = candidates.filter(c => (c.match_score || 0) >= 80).length;
   const avgScore = screened > 0
@@ -87,7 +82,6 @@ const ProjectDetail = () => {
 
   const latestScreening = screeningResults[0] || null;
 
-  // ── Loading skeleton ─────────────────────────────────────────────────────
   if (loading) {
     return (
       <Layout title="Project">
@@ -150,7 +144,6 @@ const ProjectDetail = () => {
     <Layout title="Project">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
 
-        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">{project.name}</h1>
@@ -173,7 +166,6 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/* KPI cards — populated from real candidate + screening data */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {[
             { label: 'Total Candidates', value: candidateTotal },
@@ -188,7 +180,6 @@ const ProjectDetail = () => {
           ))}
         </div>
 
-        {/* Project overview + pipeline */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm lg:col-span-2">
             <h3 className="text-body-md font-semibold text-primary mb-4">Recruitment Overview</h3>
@@ -214,7 +205,6 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/* Job description + required skills */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h3 className="text-body-md font-semibold text-primary mb-4">Job Description</h3>
@@ -236,7 +226,6 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/* Candidates section — empty state only when truly zero candidates */}
         {candidateTotal === 0 ? (
           <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 text-center">
             <span className="material-symbols-outlined text-4xl text-slate-300 block mb-2">person_search</span>
@@ -327,7 +316,6 @@ const ProjectDetail = () => {
           </div>
         )}
 
-        {/* Latest screening result — only shown when a result exists */}
         {latestScreening && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">

@@ -20,7 +20,7 @@ let analytics = null;
 try {
   analytics = getAnalytics(app);
 } catch (_) {
-  // Analytics may fail in non-browser environments — ignore
+
 }
 export { analytics };
 export default app;

@@ -1,6 +1,3 @@
-"""
-Upload routes for CV and JD files
-"""
 
 from flask import Blueprint, request, jsonify, current_app, g
 from datetime import datetime
@@ -29,29 +26,9 @@ job_family_classifier = JobFamilyClassifier(
 )
 cv_parser = CVParser(api_key=Config.LLAMA_API_KEY or None)
 
-
 @bp.route("/cv", methods=["POST"])
 @require_auth
 def upload_cv():
-    """
-    Upload and parse CV file
-    ---
-    tags:
-      - Upload
-    description: Uses tfidf_word.pkl, tfidf_char.pkl, and lr_classifier_family.pkl for classification.
-    consumes:
-      - multipart/form-data
-    parameters:
-      - in: formData
-        name: file
-        type: file
-        required: true
-    responses:
-      200:
-        description: CV uploaded
-      400:
-        description: Invalid request
-    """
     try:
         if "file" not in request.files:
             return jsonify(
@@ -156,7 +133,6 @@ def upload_cv():
             "owner": g.current_username,
         }
 
-        # Persist candidate per-user to Firestore (or JSON fallback)
         firebase_db.save_candidate(
             owner=g.current_username,
             project_id=project_id,
@@ -189,21 +165,9 @@ def upload_cv():
             )
         ), 500
 
-
 @bp.route("/candidates", methods=["GET"])
 @require_auth
 def get_my_candidates():
-    """
-    Get all candidates uploaded by current user (optionally filtered by project)
-    ---
-    tags:
-      - Upload
-    security:
-      - BearerAuth: []
-    responses:
-      200:
-        description: Candidate list
-    """
     project_id = request.args.get("project_id")
     candidates = firebase_db.list_candidates(owner=g.current_username, project_id=project_id)
     if candidates is None:
@@ -213,33 +177,9 @@ def get_my_candidates():
         message=f"Retrieved {len(candidates)} candidates",
     )), 200
 
-
 @bp.route("/jd", methods=["POST"])
 @require_auth
 def upload_jd():
-    """
-    Upload Job Description (can be file or text)
-    ---
-    tags:
-      - Upload
-    description: Uses tfidf_word.pkl, tfidf_char.pkl, and lr_classifier_family.pkl for classification reference.
-    consumes:
-      - multipart/form-data
-      - application/json
-    parameters:
-      - in: formData
-        name: file
-        type: file
-        required: false
-      - in: body
-        name: body
-        required: false
-    responses:
-      200:
-        description: JD uploaded
-      400:
-        description: Invalid request
-    """
     try:
         jd_text = None
 

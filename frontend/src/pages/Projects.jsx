@@ -147,7 +147,7 @@ const Projects = () => {
   return (
     <Layout title="Projects">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
-        {/* Header */}
+
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Recruitment Projects</h1>
@@ -162,7 +162,6 @@ const Projects = () => {
           </button>
         </div>
 
-        {/* Search & Filters */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
           <div className="relative flex-1">
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 material-symbols-outlined text-secondary text-xl">search</span>
@@ -192,7 +191,6 @@ const Projects = () => {
           </div>
         </div>
 
-        {/* New Project Form */}
         {showNewProject && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h2 className="text-body-md font-semibold text-primary mb-4">
@@ -321,7 +319,6 @@ const Projects = () => {
           </div>
         )}
 
-        {/* Projects Grid */}
         {projectsLoading ? (
           <div className="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500">
             Loading projects...

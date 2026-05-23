@@ -1,7 +1,3 @@
-"""
-Data Cleaning and Structuring Service
-Processes and normalizes extracted CV and JD data.
-"""
 
 import logging
 import re
@@ -9,19 +5,17 @@ from typing import Dict, List, Any
 
 logger = logging.getLogger(__name__)
 
-# ── Common tech / professional skills vocabulary ──────────────────────────
-# Used to auto-extract skills from free-text JDs and CVs when none are explicit.
 COMMON_SKILLS: List[str] = [
-    # Languages
+
     "python", "java", "javascript", "typescript", "c++", "c#", "c", "go", "golang",
     "rust", "ruby", "php", "swift", "kotlin", "scala", "r", "matlab", "perl",
     "bash", "shell", "powershell",
-    # Web
+
     "html", "css", "sass", "scss", "bootstrap", "tailwind", "react", "angular",
     "vue", "next.js", "nuxt", "svelte", "jquery", "webpack", "vite",
     "node.js", "nodejs", "express", "fastapi", "flask", "django", "spring",
     "laravel", "rails", "graphql", "rest", "rest api", "soap",
-    # Data / ML
+
     "machine learning", "deep learning", "nlp", "natural language processing",
     "computer vision", "tensorflow", "pytorch", "keras", "scikit-learn",
     "pandas", "numpy", "scipy", "matplotlib", "seaborn", "plotly",
@@ -29,30 +23,28 @@ COMMON_SKILLS: List[str] = [
     "statistics", "probability", "regression", "classification", "clustering",
     "neural network", "transformer", "bert", "llm", "generative ai",
     "feature engineering", "model training", "xgboost", "lightgbm",
-    # Databases
+
     "sql", "mysql", "postgresql", "postgres", "sqlite", "oracle", "sql server",
     "mongodb", "elasticsearch", "redis", "cassandra", "dynamodb", "firebase",
     "bigquery", "snowflake", "databricks", "hive",
-    # Cloud / DevOps
+
     "aws", "azure", "gcp", "google cloud", "docker", "kubernetes", "helm",
     "terraform", "ansible", "jenkins", "github actions", "ci/cd", "gitlab ci",
     "linux", "unix", "devops", "sre", "microservices", "serverless",
-    # Mobile
+
     "android", "ios", "react native", "flutter", "xamarin",
-    # Tools
+
     "git", "github", "gitlab", "jira", "confluence", "notion",
     "figma", "sketch", "adobe xd", "illustrator", "photoshop",
     "tableau", "power bi", "looker", "metabase",
-    # Soft / process
+
     "agile", "scrum", "kanban", "lean", "six sigma",
     "project management", "product management", "stakeholder management",
     "communication", "teamwork", "leadership", "problem solving",
     "critical thinking", "time management", "adaptability",
 ]
 
-# Build a sorted list (longest first) for greedy matching
 _SKILL_LIST_SORTED = sorted(COMMON_SKILLS, key=len, reverse=True)
-
 
 class DataCleaner:
 
@@ -82,17 +74,13 @@ class DataCleaner:
 
     @staticmethod
     def extract_skills_from_text(text: str) -> List[str]:
-        """
-        Scan free text for known skill keywords.
-        Used to auto-populate required_skills when the caller didn't provide them.
-        """
         if not text:
             return []
         text_lower = text.lower()
         found: List[str] = []
         seen: set = set()
         for skill in _SKILL_LIST_SORTED:
-            # Match as a whole word (not substring of another word)
+
             pattern = r"(?<![a-z0-9+#.])" + re.escape(skill) + r"(?![a-z0-9+#.])"
             if re.search(pattern, text_lower) and skill not in seen:
                 found.append(skill)
@@ -102,11 +90,6 @@ class DataCleaner:
 
     @staticmethod
     def structure_cv_data(raw_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Structure and clean raw CV data.
-        Accepts both raw keys (name, experience, raw_text)
-        and structured keys (candidate_name, experience_text, full_text).
-        """
         name = raw_data.get("name") or raw_data.get("candidate_name", "")
         experience = raw_data.get("experience_text") or raw_data.get("experience", "")
         education = raw_data.get("education_text") or raw_data.get("education", "")
@@ -114,7 +97,6 @@ class DataCleaner:
 
         skills = DataCleaner.normalize_skills(raw_data.get("skills", []))
 
-        # If no explicit skills, try to extract from full_text
         if not skills and full_text:
             skills = DataCleaner.extract_skills_from_text(full_text)
             if skills:
@@ -144,17 +126,12 @@ class DataCleaner:
 
     @staticmethod
     def structure_jd_data(raw_jd: Dict[str, str]) -> Dict[str, Any]:
-        """
-        Structure and clean raw Job Description data.
-        Auto-extracts required_skills from full_text when not explicitly provided.
-        """
         job_title = raw_jd.get("job_title") or raw_jd.get("title", "")
         full_text = DataCleaner.clean_text(raw_jd.get("full_text", ""))
 
         required_skills = DataCleaner.normalize_skills(raw_jd.get("required_skills", []))
         preferred_skills = DataCleaner.normalize_skills(raw_jd.get("preferred_skills", []))
 
-        # Auto-extract skills from text if none were explicitly provided
         if not required_skills and full_text:
             required_skills = DataCleaner.extract_skills_from_text(full_text)
             if required_skills:

@@ -4,7 +4,6 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { getScreeningResults } from '../services/api';
 
-/* ── helpers ────────────────────────────────────────────────── */
 const scoreBadge = (score) => {
   if (score >= 80) return { badge: 'HIGHLY RECOMMENDED', badgeBg: 'bg-green-50', badgeText: 'text-green-700', badgeBorder: 'border-green-100' };
   if (score >= 65) return { badge: 'STRONG MATCH',       badgeBg: 'bg-blue-50',  badgeText: 'text-blue-700',  badgeBorder: 'border-blue-100' };
@@ -22,7 +21,6 @@ const ScoreBar = ({ label, value, color = 'bg-primary' }) => (
   </div>
 );
 
-/* ── fallback static data (kept as requested) ───────────────── */
 const FALLBACK_TOP = [
   {
     rank: 1, name: 'Sarah Jenkins', title: 'Lead UX Architect', experience: '8 Years Exp.',
@@ -47,7 +45,6 @@ const FALLBACK_TOP = [
   },
 ];
 
-/* ── component ───────────────────────────────────────────────── */
 const Ranking = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,7 +59,6 @@ const Ranking = () => {
   const [historyResults, setHistoryResults] = useState([]);
   const [activeHistoryIdx, setActiveHistoryIdx] = useState(null);
 
-  /* load results: location.state > localStorage > API */
   const applyResults = (data) => {
     if (!data?.ranked_candidates?.length) return;
     const all = data.ranked_candidates;
@@ -95,12 +91,12 @@ const Ranking = () => {
   };
 
   useEffect(() => {
-    // 1. From navigation state (just ran screening)
+
     if (location.state?.results) {
       applyResults(location.state.results);
       return;
     }
-    // 2. From localStorage
+
     try {
       const raw = localStorage.getItem('ranked_candidates');
       const parsed = raw ? JSON.parse(raw) : null;
@@ -109,7 +105,7 @@ const Ranking = () => {
         return;
       }
     } catch (_) {}
-    // 3. From API (Firestore)
+
     if (currentProject?.id) {
       setLoadingHistory(true);
       getScreeningResults(currentProject.id)
@@ -126,12 +122,11 @@ const Ranking = () => {
     }
   }, [location.state, currentProject?.id]);
 
-  // Real data takes full priority; static fallback only when no real data at all
   const displayTop = rankedCandidates.length > 0 ? rankedCandidates : FALLBACK_TOP;
   const displayRemaining = remainingCandidates.length > 0
     ? remainingCandidates
     : isRealData
-      ? []   // real run with < 4 candidates — no fake rows
+      ? []
       : [
           { rank: 4, name: 'David Chen',      experience: '5 Yrs · Mobile First', score: 88 },
           { rank: 5, name: 'Sofia Rodriguez', experience: '7 Yrs · SaaS Expert',  score: 85 },
@@ -146,7 +141,6 @@ const Ranking = () => {
     <Layout title="Candidate Ranking">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
 
-        {/* Header */}
         <div className="mb-8 pb-6 border-b border-slate-200">
           <nav className="flex items-center space-x-2 text-label-sm text-slate-400 mb-3">
             <span>Recruitment</span>
@@ -185,7 +179,6 @@ const Ranking = () => {
           </div>
         </div>
 
-        {/* History bar (Firestore results) */}
         {historyResults.length > 1 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
             <p className="text-label-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Screening History</p>
@@ -203,7 +196,6 @@ const Ranking = () => {
           </div>
         )}
 
-        {/* No data state */}
         {!isRealData && !loadingHistory && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
             <span className="material-symbols-outlined text-yellow-600">info</span>
@@ -220,16 +212,14 @@ const Ranking = () => {
           <div className="text-center py-6 text-slate-500 text-sm">Loading previous results...</div>
         )}
 
-        {/* Dashboard Grid */}
         <div className="grid grid-cols-12 gap-8 items-start">
-          {/* Left: Candidate Ranking List */}
+
           <div className="col-span-8 space-y-4">
             <div className="flex items-center justify-between px-2 py-1">
               <h3 className="font-h3 text-primary">Ranked Candidates ({displayTop.length})</h3>
               <span className="text-xs text-secondary font-medium">Sorted by: <strong className="text-primary">Match Score</strong></span>
             </div>
 
-            {/* Top Cards */}
             {displayTop.map((candidate) => (
               <div key={candidate.rank} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-start space-x-4">
@@ -237,7 +227,7 @@ const Ranking = () => {
                     #{candidate.rank}
                   </div>
                   <div className="flex-1 min-w-0">
-                    {/* Name + Score */}
+
                     <div className="flex justify-between items-start mb-1">
                       <div>
                         <h4 className="text-lg font-bold text-slate-900 leading-tight">{candidate.name}</h4>
@@ -262,7 +252,6 @@ const Ranking = () => {
                       </div>
                     </div>
 
-                    {/* Score Breakdown — real data only */}
                     {isRealData && (
                       <div className="mt-3 space-y-1.5 p-3 bg-slate-50 rounded-lg">
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Score Breakdown</p>
@@ -272,7 +261,6 @@ const Ranking = () => {
                       </div>
                     )}
 
-                    {/* Skill Details */}
                     {isRealData && candidate.skill_details && (
                       <div className="mt-3 space-y-1">
                         {candidate.skill_details.matched_skills?.length > 0 && (
@@ -294,7 +282,6 @@ const Ranking = () => {
                       </div>
                     )}
 
-                    {/* Skills of candidate */}
                     {isRealData && candidate.skills?.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {candidate.skills.slice(0, 8).map((s, si) => (
@@ -304,7 +291,6 @@ const Ranking = () => {
                       </div>
                     )}
 
-                    {/* Experience / Insight */}
                     <div className="mt-4 flex items-center space-x-4">
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
@@ -335,7 +321,6 @@ const Ranking = () => {
               </div>
             ))}
 
-            {/* Remaining table */}
             <div className="mt-12 bg-white rounded-xl border border-slate-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
                 <h4 className="text-sm font-bold text-slate-900">
@@ -383,7 +368,6 @@ const Ranking = () => {
             </div>
           </div>
 
-          {/* Right: Shortlist */}
           <div className="col-span-4">
             <div className="sticky top-24 space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -423,7 +407,6 @@ const Ranking = () => {
                 Request Internal Review
               </button>
 
-              {/* Selection Metrics */}
               <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
                 <h4 className="text-xs font-bold text-slate-900 uppercase">
                   {isRealData ? 'Model Metrics' : 'Selection Metrics'}

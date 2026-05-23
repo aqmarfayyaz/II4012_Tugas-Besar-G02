@@ -1,8 +1,3 @@
-"""
-Analytics aggregation endpoint.
-Computes real recruitment metrics from candidates, screening results, and projects.
-No fake/mock data — every figure is derived from persisted database records.
-"""
 import csv
 import io
 import json
@@ -23,9 +18,6 @@ logger = logging.getLogger(__name__)
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _PROJECTS_FILE = os.path.join(_DATA_DIR, "projects.json")
 
-
-# ── Helpers ────────────────────────────────────────────────────────────────
-
 def _load_projects(owner: str) -> list:
     if firebase_db.is_available():
         result = firebase_db.list_projects(owner=owner)
@@ -38,50 +30,23 @@ def _load_projects(owner: str) -> list:
     except Exception:
         return []
 
-
 def _parse_dt(s) -> datetime:
     try:
         return datetime.fromisoformat(str(s))
     except Exception:
         return datetime.min
 
-
 def _score_f(candidate) -> float:
     return float(candidate.get("match_score") or candidate.get("overall_score") or 0)
-
-
-# ── Main analytics endpoint ────────────────────────────────────────────────
 
 @bp.route("", methods=["GET"])
 @require_auth
 def get_analytics():
-    """
-    Get aggregated analytics for the authenticated user.
-    ---
-    tags:
-      - Analytics
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: query
-        name: project_id
-        type: string
-        required: false
-      - in: query
-        name: days
-        type: integer
-        required: false
-        description: "Filter to last N days (0 = all time)"
-    responses:
-      200:
-        description: Analytics data
-    """
     try:
         project_id = request.args.get("project_id") or None
         days = int(request.args.get("days", "0") or 0)
         owner = g.current_username
 
-        # ── Raw data ────────────────────────────────────────────────────────
         candidates = firebase_db.list_candidates(owner=owner, project_id=project_id) or []
         screening_results = (
             firebase_db.list_screening_results(owner=owner, project_id=project_id) or []
@@ -90,7 +55,6 @@ def get_analytics():
         if project_id:
             projects = [p for p in projects if p.get("id") == project_id]
 
-        # ── Time filter ──────────────────────────────────────────────────────
         if days > 0:
             cutoff = datetime.utcnow() - timedelta(days=days)
             candidates = [c for c in candidates if _parse_dt(c.get("created_at")) >= cutoff]
@@ -100,13 +64,10 @@ def get_analytics():
 
         project_map = {p.get("id"): p for p in projects}
 
-        # ── Status distribution ──────────────────────────────────────────────
         status_counts: dict = defaultdict(int)
         for c in candidates:
             status_counts[c.get("status", "applied")] += 1
 
-        # ── Scored subset ────────────────────────────────────────────────────
-        # Only candidates that have gone through AI screening (match_score > 0)
         scored = [c for c in candidates if _score_f(c) > 0]
         total = len(candidates)
         screened_count = len(scored)
@@ -117,15 +78,11 @@ def get_analytics():
         medium_count = sum(1 for s in scores if 40 <= s < 80)
         low_count = sum(1 for s in scores if s < 40)
 
-        # ── AI accuracy proxy ────────────────────────────────────────────────
-        # Percentage of screened candidates that achieved a relevant score (≥50)
         relevant = sum(1 for s in scores if s >= 50)
         ai_accuracy = round(relevant / len(scores) * 100, 1) if scores else 0
 
-        # Screening coverage: % of all uploaded candidates that have been screened
         screening_coverage = round(screened_count / total * 100, 1) if total else 0
 
-        # ── Funnel ───────────────────────────────────────────────────────────
         shortlisted_count = sum(
             1 for c in candidates
             if c.get("status") == "shortlisted" or _score_f(c) >= 80
@@ -147,7 +104,6 @@ def get_analytics():
                  "percentage": round(interviewed_count / total * 100)},
             ]
 
-        # ── Score trend (group screened candidates by month of last_screened_at) ──
         month_buckets: dict = defaultdict(list)
         for c in candidates:
             ts = c.get("last_screened_at") or c.get("created_at")
@@ -156,7 +112,6 @@ def get_analytics():
                 key = _parse_dt(ts).strftime("%b").upper()
                 month_buckets[key].append(s)
 
-        # Sort by calendar order
         _MONTH_ORDER = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
         score_trend = [
             {
@@ -168,7 +123,6 @@ def get_analytics():
             if m in month_buckets
         ]
 
-        # ── Department breakdown ──────────────────────────────────────────────
         dept_stats: dict = defaultdict(lambda: {
             "project_count": 0, "candidate_count": 0,
             "total_score": 0.0, "scored_count": 0,
@@ -200,7 +154,6 @@ def get_analytics():
             })
         departments.sort(key=lambda x: x["candidates"], reverse=True)
 
-        # ── Top required skills from all JDs ─────────────────────────────────
         skill_freq: dict = defaultdict(int)
         for r in screening_results:
             for skill in (r.get("jd_data") or {}).get("required_skills", []):
@@ -211,7 +164,6 @@ def get_analytics():
             for s, c in sorted(skill_freq.items(), key=lambda x: x[1], reverse=True)[:10]
         ]
 
-        # ── Job categories distribution ───────────────────────────────────────
         cat_counts: dict = defaultdict(int)
         for r in screening_results:
             cat = r.get("job_category") or "Unknown"
@@ -221,9 +173,8 @@ def get_analytics():
             pid = c.get("project_id", "")
             proj = project_map.get(pid)
             cat = (proj.get("department") if proj else None) or c.get("predicted_label") or "Other"
-            cat_counts[cat] += 0  # ensure key exists without double-counting
+            cat_counts[cat] += 0
 
-        # ── Screening session stats ───────────────────────────────────────────
         screening_sessions = len(screening_results)
         all_ranked_scores = []
         for r in screening_results:
@@ -234,7 +185,7 @@ def get_analytics():
 
         return jsonify(format_response(
             data={
-                # KPIs
+
                 "total_candidates": total,
                 "screened_candidates": screened_count,
                 "shortlisted": shortlisted_count,
@@ -245,18 +196,18 @@ def get_analytics():
                 "screening_coverage": screening_coverage,
                 "screening_sessions": screening_sessions,
                 "projects_count": len(projects),
-                # Score breakdown
+
                 "score_distribution": {
                     "high": high_count,
                     "medium": medium_count,
                     "low": low_count,
                 },
-                # Charts
+
                 "funnel": funnel,
                 "score_trend": score_trend,
                 "departments": departments,
                 "top_skills": top_skills,
-                # Status
+
                 "candidates_by_status": dict(status_counts),
             },
             message="Analytics retrieved",
@@ -266,28 +217,9 @@ def get_analytics():
         logger.error("get_analytics error: %s", exc)
         return jsonify(format_response(message=str(exc), status="error", code=500)), 500
 
-
-# ── CSV Export ─────────────────────────────────────────────────────────────
-
 @bp.route("/export", methods=["GET"])
 @require_auth
 def export_analytics():
-    """
-    Export analytics as CSV.
-    ---
-    tags:
-      - Analytics
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: query
-        name: project_id
-        type: string
-        required: false
-    responses:
-      200:
-        description: CSV file
-    """
     try:
         project_id = request.args.get("project_id") or None
         owner = g.current_username
@@ -307,13 +239,11 @@ def export_analytics():
         output = io.StringIO()
         w = csv.writer(output)
 
-        # Header
         w.writerow(["TalentPulse AI — Recruitment Analytics Report"])
         w.writerow([f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}"])
         w.writerow([f"Account: {owner}"])
         w.writerow([])
 
-        # Summary
         w.writerow(["SUMMARY METRICS"])
         w.writerow(["Metric", "Value"])
         w.writerow(["Total Candidates", len(candidates)])
@@ -327,7 +257,6 @@ def export_analytics():
         w.writerow(["Active Projects", len(projects)])
         w.writerow([])
 
-        # Candidates
         w.writerow(["CANDIDATES"])
         w.writerow(["Name", "Email", "Project", "Department", "Status",
                     "Match Score", "Similarity Score", "Skill Score",
@@ -350,7 +279,6 @@ def export_analytics():
             ])
         w.writerow([])
 
-        # Projects
         w.writerow(["PROJECTS"])
         w.writerow(["Name", "Job Title", "Department", "Status",
                     "Employment Type", "Priority", "Hiring Quota", "Created At"])
@@ -367,7 +295,6 @@ def export_analytics():
             ])
         w.writerow([])
 
-        # Screening sessions
         w.writerow(["SCREENING SESSIONS"])
         w.writerow(["Session ID", "Project", "Job Category", "Candidates Ranked",
                     "Avg Score", "Created At"])

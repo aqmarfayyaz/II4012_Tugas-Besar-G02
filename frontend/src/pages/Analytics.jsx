@@ -3,12 +3,10 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { getAnalytics, exportAnalyticsCsv } from '../services/api';
 
-// ── Skeleton pulse ────────────────────────────────────────────────────────
 const Pulse = ({ className }) => (
   <div className={`animate-pulse bg-slate-200 rounded ${className}`} />
 );
 
-// ── Time range options ────────────────────────────────────────────────────
 const RANGES = [
   { label: 'Last 7 Days', days: 7 },
   { label: 'Last 30 Days', days: 30 },
@@ -22,11 +20,10 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
-  const [range, setRange] = useState(RANGES[1]);        // default: Last 30 Days
+  const [range, setRange] = useState(RANGES[1]);
   const [showRangeMenu, setShowRangeMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // ── Fetch analytics ───────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -45,7 +42,6 @@ const Analytics = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ── CSV export ────────────────────────────────────────────────────────
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -63,12 +59,10 @@ const Analytics = () => {
     }
   };
 
-  // ── Department filter by search ───────────────────────────────────────
   const filteredDepts = (data?.departments || []).filter(d =>
     !searchTerm || d.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ── Loading state ─────────────────────────────────────────────────────
   if (loading) {
     return (
       <Layout title="Analytics">
@@ -105,7 +99,6 @@ const Analytics = () => {
     );
   }
 
-  // ── Error state ───────────────────────────────────────────────────────
   if (error) {
     return (
       <Layout title="Analytics">
@@ -124,7 +117,6 @@ const Analytics = () => {
     );
   }
 
-  // ── Empty state ───────────────────────────────────────────────────────
   if (!data || data.total_candidates === 0) {
     return (
       <Layout title="Analytics">
@@ -145,7 +137,6 @@ const Analytics = () => {
     );
   }
 
-  // ── Derived values ────────────────────────────────────────────────────
   const {
     total_candidates = 0,
     screened_candidates = 0,
@@ -175,7 +166,6 @@ const Analytics = () => {
     <Layout title="Analytics">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
 
-        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Recruitment Intelligence</h1>
@@ -184,7 +174,7 @@ const Analytics = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Time range picker */}
+
             <div className="relative">
               <button
                 onClick={() => setShowRangeMenu(v => !v)}
@@ -222,7 +212,6 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Search bar — filters department table */}
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-secondary text-xl">search</span>
           <input
@@ -234,7 +223,6 @@ const Analytics = () => {
           />
         </div>
 
-        {/* Top KPIs — 4 quick stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'Total Candidates', value: total_candidates, icon: 'group' },
@@ -252,10 +240,8 @@ const Analytics = () => {
           ))}
         </div>
 
-        {/* Row 1: AI Accuracy + Score Trend */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          {/* AI Matching Accuracy */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -285,7 +271,6 @@ const Analytics = () => {
             </div>
           </div>
 
-          {/* Score Trend Chart */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm md:col-span-2">
             <h3 className="text-body-md font-semibold text-primary mb-4 flex items-center justify-between">
               <span>Match Score Trend</span>
@@ -308,7 +293,7 @@ const Analytics = () => {
                       className="w-full bg-gradient-to-t from-primary/60 to-primary rounded-sm transition-all"
                       style={{ height: `${Math.max(4, (point.avg_score / maxTrend) * 100)}%` }}
                     />
-                    {/* Tooltip */}
+
                     <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                       {point.avg_score}% · {point.count} candidates
                     </div>
@@ -320,7 +305,6 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Screening Coverage Card */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
@@ -337,7 +321,7 @@ const Analytics = () => {
             </div>
             <span className="material-symbols-outlined text-slate-300 text-3xl">verified_user</span>
           </div>
-          {/* Coverage progress bar */}
+
           <div className="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all"
@@ -346,10 +330,8 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Row 2: Funnel + Score Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* Candidate Funnel */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h3 className="text-body-md font-semibold text-primary mb-6">Conversion Pipeline — Candidate Funnel</h3>
             {funnel.length === 0 ? (
@@ -385,14 +367,13 @@ const Analytics = () => {
             )}
           </div>
 
-          {/* Score Distribution */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h3 className="text-body-md font-semibold text-primary mb-6">Score Distribution — AI Screening Results</h3>
             {screened_candidates === 0 ? (
               <p className="text-sm text-slate-400">Run AI screening to see score distribution.</p>
             ) : (
               <div className="space-y-6">
-                {/* Visual bars: High / Medium / Low */}
+
                 {[
                   { label: 'High Match (≥80%)', count: score_distribution.high, pct: distHighPct, color: 'bg-green-500' },
                   { label: 'Medium Match (40–79%)', count: score_distribution.medium, pct: distMedPct, color: 'bg-blue-400' },
@@ -436,7 +417,6 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Top Required Skills */}
         {top_skills.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h3 className="text-body-md font-semibold text-primary mb-4">
@@ -456,7 +436,6 @@ const Analytics = () => {
           </div>
         )}
 
-        {/* Departmental Velocity Audit */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-body-md font-semibold text-primary">Departmental Analytics</h3>

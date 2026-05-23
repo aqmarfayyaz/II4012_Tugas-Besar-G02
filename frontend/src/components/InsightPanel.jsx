@@ -12,7 +12,7 @@ const InsightPanel = ({ candidate }) => {
       <h3 className="text-xl font-bold mb-4">📊 Detailed Analysis</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Score Breakdown */}
+
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
           <h4 className="font-semibold mb-4">Score Breakdown</h4>
           <div className="space-y-3">
@@ -55,7 +55,6 @@ const InsightPanel = ({ candidate }) => {
           </div>
         </div>
 
-        {/* Skills Summary */}
         <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
           <h4 className="font-semibold mb-4">Skills Analysis</h4>
           <div className="space-y-2 text-sm">
@@ -75,7 +74,6 @@ const InsightPanel = ({ candidate }) => {
         </div>
       </div>
 
-      {/* Matched Skills */}
       {skillDetails.matched_skills && skillDetails.matched_skills.length > 0 && (
         <div className="mb-6">
           <h4 className="font-semibold mb-3">✅ Matched Skills</h4>
@@ -92,7 +90,6 @@ const InsightPanel = ({ candidate }) => {
         </div>
       )}
 
-      {/* Missing Skills */}
       {skillDetails.missing_skills && skillDetails.missing_skills.length > 0 && (
         <div className="mb-6">
           <h4 className="font-semibold mb-3">❌ Missing Skills</h4>
@@ -109,7 +106,6 @@ const InsightPanel = ({ candidate }) => {
         </div>
       )}
 
-      {/* Insight */}
       {candidate.insight && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
           <h4 className="font-semibold mb-2">💡 Assessment</h4>

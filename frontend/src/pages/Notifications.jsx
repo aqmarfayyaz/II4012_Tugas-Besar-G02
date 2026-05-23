@@ -98,7 +98,6 @@ const Notifications = () => {
     <Layout title="Notifications">
       <div className="max-w-3xl mx-auto px-8 py-8 space-y-6">
 
-        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary flex items-center gap-3">

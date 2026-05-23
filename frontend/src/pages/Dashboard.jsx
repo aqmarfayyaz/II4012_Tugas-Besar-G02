@@ -4,13 +4,11 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardMetrics } from '../services/api';
 
-// ── Colours for job category bars (cycles if > 6 categories) ─────────────
 const CAT_COLORS = [
   'bg-slate-900', 'bg-slate-600', 'bg-slate-400', 'bg-blue-400',
   'bg-indigo-400', 'bg-purple-400',
 ];
 
-// ── Skeleton pulse placeholder ────────────────────────────────────────────
 const Pulse = ({ className }) => (
   <div className={`animate-pulse bg-slate-200 rounded ${className}`} />
 );
@@ -22,7 +20,6 @@ const SkeletonKpiCard = () => (
   </div>
 );
 
-// ── Relative time helper ──────────────────────────────────────────────────
 const relativeTime = (isoStr) => {
   if (!isoStr) return '—';
   try {
@@ -39,7 +36,6 @@ const relativeTime = (isoStr) => {
   }
 };
 
-// ── Match status badge styling ────────────────────────────────────────────
 const statusClass = {
   'HIGH MATCH': 'bg-green-100 text-green-700',
   'MED MATCH': 'bg-yellow-100 text-yellow-700',
@@ -47,17 +43,14 @@ const statusClass = {
   PENDING: 'bg-slate-100 text-slate-500',
 };
 
-// ── Insight icon colour ───────────────────────────────────────────────────
 const insightColor = { match: 'text-green-600', trend: 'text-blue-600', alert: 'text-yellow-600', info: 'text-slate-500' };
 
-// ── Avatar initials from full name ────────────────────────────────────────
 const initials = (name) => {
   const parts = (name || '').trim().split(/\s+/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return (name || '?').slice(0, 2).toUpperCase();
 };
 
-// ─────────────────────────────────────────────────────────────────────────
 const Dashboard = () => {
   const navigate = useNavigate();
   const { currentProject } = useAuth();
@@ -84,7 +77,6 @@ const Dashboard = () => {
     fetchMetrics();
   }, [fetchMetrics]);
 
-  // ── Derived values ──────────────────────────────────────────────────────
   const m = metrics || {};
   const jobCategories   = m.job_categories    || [];
   const scoreDist       = m.score_distribution || [];
@@ -98,7 +90,6 @@ const Dashboard = () => {
   const circ          = 2 * Math.PI * 45;
   const highStroke    = (mq.high_match / 100) * circ;
 
-  // ── Error state ─────────────────────────────────────────────────────────
   if (error) {
     return (
       <Layout title="Dashboard">
@@ -125,7 +116,6 @@ const Dashboard = () => {
     <Layout title="Dashboard">
       <div className="max-w-[1440px] mx-auto px-8 py-8 space-y-6">
 
-        {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-h1 font-h1 text-primary">Dashboard Overview</h1>
@@ -153,7 +143,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* ── KPI Cards ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => <SkeletonKpiCard key={i} />)
@@ -204,10 +193,8 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* ── Charts Row ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* Candidates by Job Category */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-body-md font-semibold text-primary">Candidates by Job Category</h3>
@@ -249,7 +236,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Score Distribution */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-body-md font-semibold text-primary">Score Distribution</h3>
@@ -290,7 +276,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Match Quality — Donut */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-body-md font-semibold text-primary">Match Quality</h3>
@@ -354,10 +339,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* ── Bottom Section ───────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* Latest CV Submissions */}
           <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-body-md font-semibold text-primary">Latest CV Submissions</h3>
@@ -429,10 +412,8 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Right column: System Engine + AI Insights */}
           <div className="space-y-6">
 
-            {/* System Engine */}
             <div className="bg-slate-900 rounded-xl border border-slate-700 p-6 text-white shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -467,7 +448,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* AI Insights */}
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
               <h3 className="text-body-md font-semibold text-primary mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-lg">auto_awesome</span>
