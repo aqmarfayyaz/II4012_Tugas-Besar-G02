@@ -1,6 +1,4 @@
-# 🤖 AI-based CV Screening System (TalentPulse AI)
-
-An intelligent recruitment system that uses AI to parse, classify, and match CVs against job descriptions. Features a professional React frontend with Material Design 3, and a Python Flask backend with ML-powered candidate ranking.
+# TalentPulse AI: Pemodelan AI untuk Efisiensi CV Screening
 
 ## Solusi AI
 ### 1. Solusi AIaaS
@@ -114,6 +112,10 @@ II4012_Tugas-Besar-G02/
 - Python 3.8+
 - Node.js 16+
 - pip / npm
+
+## Setup TalentPulse
+### Buat .env di root directory
+.env dapat diakses pada Laporan Akhir yang telah dikumpulkan kelompok
 
 ### Backend Setup
 
