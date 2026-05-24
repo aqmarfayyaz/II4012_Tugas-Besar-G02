@@ -38,7 +38,7 @@
   },
   "veli@gmail.com": {
     "password": "pbkdf2:sha256:600000$sAitNk8I4BkIDEtZ$c2110401a8ca0e627363cb66d7e88bcff5501af816c733c9ce98a23e9eaf68b4",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ2ZWxpQGdtYWlsLmNvbSIsImlhdCI6MTc3OTU1MjM3NywiZXhwIjoxNzc5NjM4Nzc3fQ.O5kIGF0oTHD5DnfRj-ihYOWwsc_oHf7o5icXdH6kXGw",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ2ZWxpQGdtYWlsLmNvbSIsImlhdCI6MTc3OTU5Njk5MCwiZXhwIjoxNzc5NjgzMzkwfQ.pozatrWVkPylDuX_HnaWNajTJkGogaZSBV7CJyqdhMI",
     "profile": {
       "username": "veli@gmail.com",
       "email": "veli@gmail.com",

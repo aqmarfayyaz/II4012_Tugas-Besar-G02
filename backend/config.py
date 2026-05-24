@@ -21,7 +21,7 @@ class Config:
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS = {'pdf', 'docx', 'doc', 'txt'}
 
-    LLAMA_API_KEY = os.getenv('LLAMA_API_KEY', '')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
     MODEL_PATH = os.path.join(BASE_DIR, "data", "models")
     EMBEDDINGS_PATH = os.path.join(BASE_DIR, "data", "embeddings")

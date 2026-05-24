@@ -24,7 +24,7 @@ job_family_classifier = JobFamilyClassifier(
     char_vectorizer_path=Config.TFIDF_CHAR_PATH,
     classifier_path=Config.LR_CLASSIFIER_PATH,
 )
-cv_parser = CVParser(api_key=Config.LLAMA_API_KEY or None)
+cv_parser = CVParser(api_key=Config.OPENAI_API_KEY or None)
 
 @bp.route("/cv", methods=["POST"])
 @require_auth
@@ -60,7 +60,7 @@ def upload_cv():
                 with open(result, "r", encoding="utf-8", errors="ignore") as f:
                     raw_text = f.read()
                 parsed_source = "plain_text"
-            elif Config.LLAMA_API_KEY:
+            elif Config.OPENAI_API_KEY:
                 parsed = cv_parser.parse_cv(result)
                 raw_text = parsed.get("raw_text", "")
                 raw_data = parsed

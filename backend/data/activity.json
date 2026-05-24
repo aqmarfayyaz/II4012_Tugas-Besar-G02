@@ -1,6 +1,22 @@
 {
   "veli@gmail.com": [
     {
+      "id": "370c304e-3e1e-44ff-a10d-d25b8bb02681",
+      "event_type": "screening_complete",
+      "title": "AI Screening Completed",
+      "detail": "1 candidate ranked \u00b7 Data",
+      "link": "/ranking",
+      "created_at": "2026-05-24T11:31:51.721259"
+    },
+    {
+      "id": "3b4b4a89-df0a-449f-9d5d-6f274af2a255",
+      "event_type": "cv_upload",
+      "title": "CV Uploaded: INGGRIED AMELIA DESWANTY",
+      "detail": "Predicted role: TECH",
+      "link": "/candidate/INGGR_INGGR_20260524183125",
+      "created_at": "2026-05-24T11:31:26.615306"
+    },
+    {
       "id": "9a3d38b5-3ce1-4354-9ce3-08ac790f9872",
       "event_type": "screening_complete",
       "title": "AI Screening Completed",
